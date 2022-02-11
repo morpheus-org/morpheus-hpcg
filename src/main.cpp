@@ -95,6 +95,10 @@ using std::endl;
 #include "TestSymmetry.hpp"
 #include "TestNorms.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 /*!
   Main driver program: Construct synthetic problem, run V&V tests, compute
   benchmark parameters, run benchmark, report results.
@@ -123,6 +127,14 @@ int main(int argc, char* argv[]) {
 
   int size = params.comm_size,
       rank = params.comm_rank;  // Number of MPI processes, My process ID
+
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::initialize(argc, argv, Morpheus::args, (0 == rank));
+#ifdef HPCG_DETAILED_DEBUG
+  Morpheus::print_configuration(HPCG_fout);
+#endif  // HPCG_DETAILED_DEBUG
+  MORPHEUS_START_SCOPE();
+#endif  // HPCG_WITH_MORPHEUS
 
 #ifdef HPCG_DETAILED_DEBUG
   if (size < 100 && rank == 0)
@@ -336,7 +348,11 @@ int main(int argc, char* argv[]) {
   // Compute the residual reduction and residual count for the user ordering and
   // optimized kernels.
   for (int i = 0; i < numberOfCalls; ++i) {
+#ifdef HPCG_WITH_MORPHEUS
+    MorpheusZeroVector(x);
+#else
     ZeroVector(x);  // start x at all zeros
+#endif  // HPCG_WITH_MORPHEUS
     double last_cummulative_time = opt_times[0];
     ierr = CG(A, data, b, x, optMaxIters, refTolerance, niters, normr, normr0,
               &opt_times[0], true);
@@ -397,7 +413,11 @@ int main(int argc, char* argv[]) {
   testnorms_data.values  = new double[numberOfCgSets];
 
   for (int i = 0; i < numberOfCgSets; ++i) {
+#ifdef HPCG_WITH_MORPHEUS
+    MorpheusZeroVector(x);
+#else
     ZeroVector(x);  // Zero out x
+#endif  // HPCG_WITH_MORPHEUS
     ierr = CG(A, data, b, x, optMaxIters, optTolerance, niters, normr, normr0,
               &times[0], true);
     if (ierr) HPCG_fout << "Error in call to CG: " << ierr << ".\n" << endl;
@@ -411,6 +431,10 @@ int main(int argc, char* argv[]) {
   // Compute difference between known exact solution and computed solution
   // All processors are needed here.
 #ifdef HPCG_DEBUG
+#ifdef HPCG_WITH_MORPHEUS
+  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  Morpheus::copy(xopt->dev, xopt->host);
+#endif  // HPCG_WITH_MORPHEUS
   double residual = 0;
   ierr            = ComputeResidual(A.localNumberOfRows, x, xexact, residual);
   if (ierr)
@@ -442,6 +466,11 @@ int main(int argc, char* argv[]) {
   DeleteVector(x_overlap);
   DeleteVector(b_computed);
   delete[] testnorms_data.values;
+
+#ifdef HPCG_WITH_MORPHEUS
+  MORPHEUS_END_SCOPE();
+  Morpheus::finalize();
+#endif  // HPCG_WITH_MORPHEUS
 
   HPCG_Finalize();
 
