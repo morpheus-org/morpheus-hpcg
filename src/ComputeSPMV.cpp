@@ -53,7 +53,15 @@
  */
 
 #include "ComputeSPMV.hpp"
+
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#ifndef HPCG_NO_MPI
+#include "ExchangeHalo.hpp"
+#endif  // HPCG_NO_MPI
+#else
 #include "ComputeSPMV_ref.hpp"
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
   Routine to compute sparse matrix vector product y = Ax where:
@@ -72,8 +80,17 @@
   @see ComputeSPMV_ref
 */
 int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
-  // This line and the next two lines should be removed and your version of
-  // ComputeSPMV should be used.
+#ifdef HPCG_WITH_MORPHEUS
+#ifndef HPCG_NO_MPI
+  ExchangeHalo(A, x);
+#endif  // HPCG_NO_MPI
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  HPCG_Morpheus_Vec* yopt = (HPCG_Morpheus_Vec*)y.optimizationData;
+  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->dev, xopt->dev, yopt->dev);
+  return 0;
+#else
   A.isSpmvOptimized = false;
   return ComputeSPMV_ref(A, x, y);
+#endif  // HPCG_WITH_MORPHEUS
 }

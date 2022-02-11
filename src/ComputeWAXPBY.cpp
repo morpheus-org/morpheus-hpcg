@@ -53,7 +53,12 @@
  */
 
 #include "ComputeWAXPBY.hpp"
+
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#else
 #include "ComputeWAXPBY_ref.hpp"
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
   Routine to compute the update of a vector with the sum of two
@@ -77,8 +82,17 @@
 int ComputeWAXPBY(const local_int_t n, const double alpha, const Vector& x,
                   const double beta, const Vector& y, Vector& w,
                   bool& isOptimized) {
-  // This line and the next two lines should be removed and your version of
-  // ComputeWAXPBY should be used.
+#ifdef HPCG_WITH_MORPHEUS
+  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  HPCG_Morpheus_Vec* yopt = (HPCG_Morpheus_Vec*)y.optimizationData;
+  HPCG_Morpheus_Vec* wopt = (HPCG_Morpheus_Vec*)w.optimizationData;
+
+  isOptimized = true;
+  Morpheus::waxpby<Morpheus::ExecSpace>(n, alpha, xopt->dev, beta, yopt->dev,
+                                        wopt->dev);
+  return 0;
+#else
   isOptimized = false;
   return ComputeWAXPBY_ref(n, alpha, x, beta, y, w);
+#endif
 }

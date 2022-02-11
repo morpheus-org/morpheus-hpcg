@@ -54,7 +54,11 @@
 
 #include "ComputeDotProduct.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#else
 #include "ComputeDotProduct_ref.hpp"
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
   Routine to compute the dot product of two vectors.
@@ -78,8 +82,32 @@
 int ComputeDotProduct(const local_int_t n, const Vector& x, const Vector& y,
                       double& result, double& time_allreduce,
                       bool& isOptimized) {
-  // This line and the next two lines should be removed and your version of
-  // ComputeDotProduct should be used.
+#ifdef HPCG_WITH_MORPHEUS
+  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  HPCG_Morpheus_Vec* yopt = (HPCG_Morpheus_Vec*)y.optimizationData;
+
+  double local_result = 0.0;
+
+  time_allreduce += 0.0;
+  isOptimized  = true;
+  local_result = Morpheus::dot<Morpheus::ExecSpace>(n, xopt->dev, yopt->dev);
+
+#ifndef HPCG_NO_MPI
+  // Use MPI's reduce function to collect all partial sums
+  double t0            = mytimer();
+  double global_result = 0.0;
+  MPI_Allreduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_SUM,
+                MPI_COMM_WORLD);
+  result = global_result;
+  time_allreduce += mytimer() - t0;
+#else
+  time_allreduce += 0.0;
+  result = local_result;
+#endif  // HPCG_NO_MPI
+
+  return 0;
+#else
   isOptimized = false;
   return ComputeDotProduct_ref(n, x, y, result, time_allreduce);
+#endif  // HPCG_WITH_MORPHEUS
 }
