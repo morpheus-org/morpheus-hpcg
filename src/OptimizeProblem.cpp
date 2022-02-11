@@ -114,7 +114,21 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 }
 
 // Helper function (see OptimizeProblem.hpp for details)
-double OptimizeProblemMemoryUse(const SparseMatrix& A) { return 0.0; }
+double OptimizeProblemMemoryUse(const SparseMatrix& A) {
+  double fnbytes = 0.0;
+#ifdef HPCG_WITH_MORPHEUS
+  using index_type = typename Morpheus::SparseMatrix::index_type;
+  using value_type = typename Morpheus::SparseMatrix::value_type;
+  auto host        = ((HPCG_Morpheus_Mat*)A.optimizationData)->host;
+
+  fnbytes += (host.nrows() + 1) * ((double)sizeof(index_type));  // row_offsets
+  fnbytes += host.nnnz() * ((double)sizeof(index_type));  // column_indices
+  fnbytes += host.nnnz() * ((double)sizeof(value_type));  // values
+
+#endif  // HPCG_WITH_MORPHEUS
+
+  return fnbytes;
+}
 
 #if defined(HPCG_USE_MULTICOLORING)
 void multicolor(SparseMatrix& A) {

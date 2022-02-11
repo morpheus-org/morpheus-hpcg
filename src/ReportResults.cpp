@@ -131,6 +131,11 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
                         fnrow;  // 3 ddots with nrow adds and nrow mults
     double fnops_waxpby = (3.0 * fniters + fNumberOfCgSets) * 2.0 *
                           fnrow;  // 3 WAXPBYs with nrow adds and nrow mults
+
+#ifdef HPCG_WITH_MORPHEUS
+    auto host = ((HPCG_Morpheus_Mat*)A.optimizationData)->host;
+#endif  // HPCG_WITH_MORPHEUS
+
     double fnops_sparsemv = (fniters + fNumberOfCgSets) * 2.0 *
                             fnnz;  // 1 SpMV with nnz adds and nnz mults
     // Op counts from the multigrid preconditioners
@@ -479,6 +484,15 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
         ->add("Scaled residual mean", testnorms_data.mean);
     doc.get("Reproducibility Information")
         ->add("Scaled residual variance", testnorms_data.variance);
+
+#ifdef HPCG_WITH_MORPHEUS
+    doc.add("########## Morpheus Report ##########", "");
+    doc.add("Morpheus", "");
+    doc.get("Morpheus")->add("Format", host.format_enum());
+    doc.get("Morpheus")->add("Rows", host.nrows());
+    doc.get("Morpheus")->add("Columns", host.ncols());
+    doc.get("Morpheus")->add("Non Zeros", host.nnnz());
+#endif
 
     doc.add("########## Performance Summary (times in sec) ##########", "");
 
