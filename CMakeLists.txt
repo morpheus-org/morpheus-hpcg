@@ -90,7 +90,8 @@ add_executable(
   src/ComputeOptimalShapeXYZ.cpp
   src/MixedBaseCounter.cpp
   src/CheckAspectRatio.cpp
-  src/OutputFile.cpp)
+  src/OutputFile.cpp
+  src/MorpheusUtils.cpp)
 
 if(HPCG_ENABLE_CONTIGUOUS_ARRAYS)
   target_compile_definitions(morpheus-hpcg PRIVATE HPCG_CONTIGUOUS_ARRAYS)

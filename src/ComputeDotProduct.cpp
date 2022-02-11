@@ -56,6 +56,10 @@
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "MorpheusUtils.hpp"
+#ifndef HPCG_NO_MPI
+#include <mpi.h>
+#include "mytimer.hpp"
+#endif  // HPCG_NO_MPI
 #else
 #include "ComputeDotProduct_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
