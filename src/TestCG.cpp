@@ -69,6 +69,10 @@ using std::endl;
 #include "TestCG.hpp"
 #include "CG.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 /*!
   Test the correctness of the Preconditined CG implementation by using a system
   matrix with a dominant diagonal.
@@ -116,6 +120,12 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   }
   ReplaceMatrixDiagonal(A, exaggeratedDiagA);
 
+#ifdef HPCG_WITH_MORPHEUS
+  HPCG_Morpheus_Vec* bopt = (HPCG_Morpheus_Vec*)b.optimizationData;
+  MorpheusReplaceMatrixDiagonal(A, exaggeratedDiagA);
+  Morpheus::copy(bopt->host, bopt->dev);
+#endif  // HPCG_WITH_MORPHEUS
+
   int niters          = 0;
   double normr        = 0.0;
   double normr0       = 0.0;
@@ -136,7 +146,11 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     int expected_niters = testcg_data.expected_niters_no_prec;
     if (k == 1) expected_niters = testcg_data.expected_niters_prec;
     for (int i = 0; i < numberOfCgCalls; ++i) {
+#ifdef HPCG_WITH_MORPHEUS
+      MorpheusZeroVector(x);
+#else
       ZeroVector(x);  // Zero out x
+#endif  // HPCG_WITH_MORPHEUS
       int ierr = CG(A, data, b, x, maxIters, tolerance, niters, normr, normr0,
                     &times[0], k == 1);
       if (ierr) HPCG_fout << "Error in call to CG: " << ierr << ".\n" << endl;
@@ -163,6 +177,13 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   // Restore matrix diagonal and RHS
   ReplaceMatrixDiagonal(A, origDiagA);
   CopyVector(origB, b);
+
+#ifdef HPCG_WITH_MORPHEUS
+  using mirror = typename Morpheus::Vector::HostMirror;
+  MorpheusReplaceMatrixDiagonal(A, origDiagA);
+  Morpheus::copy(mirror(origB.localLength, origB.values), bopt->dev);
+#endif  // HPCG_WITH_MORPHEUS
+
   // Delete vectors
   DeleteVector(origDiagA);
   DeleteVector(exaggeratedDiagA);

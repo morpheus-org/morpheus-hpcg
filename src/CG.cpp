@@ -64,6 +64,10 @@
 #include "hpcg.hpp"
 #include "mytimer.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 // Use TICK and TOCK to time a code section in MATLAB-like fashion
 #define TICK() t0 = mytimer()  //!< record current time in 't0'
 #define TOCK(t) \
@@ -114,6 +118,13 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   Vector& p        = data.p;  // Direction vector (in MPI mode ncol>=nrow)
   Vector& Ap       = data.Ap;
 
+#ifdef HPCG_WITH_MORPHEUS
+  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  HPCG_Morpheus_Vec* ropt = (HPCG_Morpheus_Vec*)data.r.optimizationData;
+  HPCG_Morpheus_Vec* zopt = (HPCG_Morpheus_Vec*)data.z.optimizationData;
+  HPCG_Morpheus_Vec* popt = (HPCG_Morpheus_Vec*)data.p.optimizationData;
+#endif
+
   if (!doPreconditioning && A.geom->rank == 0)
     HPCG_fout << "WARNING: PERFORMING UNPRECONDITIONED ITERATIONS" << std::endl;
 
@@ -122,8 +133,12 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   if (print_freq > 50) print_freq = 50;
   if (print_freq < 1) print_freq = 1;
 #endif
-  // p is of length ncols, copy x to p for sparse MV operation
+// p is of length ncols, copy x to p for sparse MV operation
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(xopt->dev, popt->dev, 0, xopt->dev.size());
+#else
   CopyVector(x, p);
+#endif  // HPCG_WITH_MORPHEUS
   TICK();
   ComputeSPMV(A, p, Ap);
   TOCK(t3);  // Ap = A*p
@@ -143,14 +158,25 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   normr0 = normr;
 
   // Start iterations
-
   for (int k = 1; k <= max_iter && normr / normr0 > tolerance; k++) {
     TICK();
-    if (doPreconditioning)
+    if (doPreconditioning) {
+#ifdef HPCG_WITH_MORPHEUS
+      // Need to pass data to host as no Device support for MG by Morpheus
+      Morpheus::copy(ropt->dev, ropt->host);
+#endif
       ComputeMG(A, r, z);  // Apply preconditioner
-    else
+#ifdef HPCG_WITH_MORPHEUS
+      Morpheus::copy(zopt->host, zopt->dev);
+#endif
+    } else {
+#ifdef HPCG_WITH_MORPHEUS
+      Morpheus::copy(ropt->dev, zopt->host, 0, ropt->dev.size());
+#else
       CopyVector(r, z);  // copy r to z (no preconditioning)
-    TOCK(t5);            // Preconditioner apply time
+#endif  // HPCG_WITH_MORPHEUS
+    }
+    TOCK(t5);  // Preconditioner apply time
 
     if (k == 1) {
       TICK();

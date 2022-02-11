@@ -73,6 +73,10 @@ using std::endl;
 #include "SparseMatrix.hpp"
 #include "TestSymmetry.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 /*!
   Tests symmetry-preserving properties of the sparse matrix vector multiply and
   multi-grid routines.
@@ -115,6 +119,21 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
   double xNorm2, yNorm2;
   double ANorm = 2 * 26.0;
 
+#ifdef HPCG_WITH_MORPHEUS
+  MorpheusInitializeVector(x_ncol);
+  MorpheusInitializeVector(y_ncol);
+  MorpheusInitializeVector(z_ncol);
+
+  MorpheusOptimizeVector(x_ncol);
+  MorpheusOptimizeVector(y_ncol);
+  MorpheusOptimizeVector(z_ncol);
+
+  HPCG_Morpheus_Vec* xncolopt  = (HPCG_Morpheus_Vec*)x_ncol.optimizationData;
+  HPCG_Morpheus_Vec* yncolopt  = (HPCG_Morpheus_Vec*)y_ncol.optimizationData;
+  HPCG_Morpheus_Vec* zncolopt  = (HPCG_Morpheus_Vec*)z_ncol.optimizationData;
+  HPCG_Morpheus_Vec* xexactopt = (HPCG_Morpheus_Vec*)xexact.optimizationData;
+#endif
+
   // Next, compute x'*A*y
   ComputeDotProduct(nrow, y_ncol, y_ncol, yNorm2, t4, A.isDotProductOptimized);
   int ierr = ComputeSPMV(A, y_ncol, z_ncol);  // z_nrow = A*y_overlap
@@ -143,19 +162,29 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
         << "Departure from symmetry (scaled) for SpMV abs(x'*A*y - y'*A*x) = "
         << testsymmetry_data.depsym_spmv << endl;
 
-  // Test symmetry of multi-grid
-
+    // Test symmetry of multi-grid
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(yncolopt->dev, yncolopt->host);
+#endif
   // Compute x'*Minv*y
   ierr = ComputeMG(A, y_ncol, z_ncol);  // z_ncol = Minv*y_ncol
   if (ierr) HPCG_fout << "Error in call to MG: " << ierr << ".\n" << endl;
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(zncolopt->host, zncolopt->dev);
+#endif
   double xtMinvy = 0.0;
   ierr           = ComputeDotProduct(nrow, x_ncol, z_ncol, xtMinvy, t4,
                                      A.isDotProductOptimized);  // x'*Minv*y
   if (ierr) HPCG_fout << "Error in call to dot: " << ierr << ".\n" << endl;
-
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(xncolopt->dev, xncolopt->host);
+#endif
   // Next, compute z'*Minv*x
   ierr = ComputeMG(A, x_ncol, z_ncol);  // z_ncol = Minv*x_ncol
   if (ierr) HPCG_fout << "Error in call to MG: " << ierr << ".\n" << endl;
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(zncolopt->host, zncolopt->dev);
+#endif
   double ytMinvx = 0.0;
   ierr           = ComputeDotProduct(nrow, y_ncol, z_ncol, ytMinvx, t4,
                                      A.isDotProductOptimized);  // y'*Minv*x
@@ -171,13 +200,21 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
                  "y'*Minv*x) = "
               << testsymmetry_data.depsym_mg << endl;
 
+#ifdef HPCG_WITH_MORPHEUS
+  Morpheus::copy(xexactopt->host, xncolopt->host, 0, xexactopt->host.size());
+#else
   CopyVector(xexact, x_ncol);  // Copy exact answer into overlap vector
+#endif
 
   int numberOfCalls = 2;
   double residual   = 0.0;
   for (int i = 0; i < numberOfCalls; ++i) {
     ierr = ComputeSPMV(A, x_ncol, z_ncol);  // b_computed = A*x_overlap
     if (ierr) HPCG_fout << "Error in call to SpMV: " << ierr << ".\n" << endl;
+#ifdef HPCG_WITH_MORPHEUS
+    // Needed for computing residual on host
+    Morpheus::copy(zncolopt->dev, zncolopt->host);
+#endif
     if ((ierr = ComputeResidual(A.localNumberOfRows, b, z_ncol, residual)))
       HPCG_fout << "Error in call to compute_residual: " << ierr << ".\n"
                 << endl;
