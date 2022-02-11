@@ -36,8 +36,8 @@
 
 #include "MixedBaseCounter.hpp"
 
-MixedBaseCounter::MixedBaseCounter(int *counts, int length) {
-  this->length = length;
+MixedBaseCounter::MixedBaseCounter(int *counts, int len) {
+  this->length = len;
 
   int i;
 
@@ -47,7 +47,7 @@ MixedBaseCounter::MixedBaseCounter(int *counts, int length) {
   }
   // terminate with 0's
   this->max_counts[i] = this->cur_counts[i] = 0;
-  this->max_counts[length] = this->cur_counts[length] = 0;
+  this->max_counts[len] = this->cur_counts[len] = 0;
 }
 
 MixedBaseCounter::MixedBaseCounter(MixedBaseCounter &left,

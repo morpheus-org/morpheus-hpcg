@@ -211,14 +211,14 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
       Af = Af->Ac;                         // Go to next coarse level
     }
 
-    double fnnz_Af  = Af->totalNumberOfNonzeros;
-    double fnrow_Af = Af->totalNumberOfRows;
+    double fnnz_Af   = Af->totalNumberOfNonzeros;
+    double ffnrow_Af = Af->totalNumberOfRows;
     fnreads_precond +=
         fniters * (2.0 * fnnz_Af * (sizeof(double) + sizeof(local_int_t)) +
-                   fnrow_Af * sizeof(double));
+                   ffnrow_Af * sizeof(double));
     ;  // One symmetric GS sweep at the coarsest level
     fnwrites_precond +=
-        fniters * fnrow_Af *
+        fniters * ffnrow_Af *
         sizeof(double);  // One symmetric GS sweep at the coarsest level
     double fnreads =
         fnreads_ddot + fnreads_waxpby + fnreads_sparsemv + fnreads_precond;
@@ -274,14 +274,14 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
 
     Af = A.Ac;
     for (int i = 1; i < numberOfMgLevels; ++i) {
-      double fnrow_Af = Af->totalNumberOfRows;
-      double fncol_Af = ((global_int_t)Af->localNumberOfColumns) *
+      double fffnrow_Af = Af->totalNumberOfRows;
+      double fncol_Af   = ((global_int_t)Af->localNumberOfColumns) *
                         size;  // Estimate of the global number of columns using
                                // the value from rank 0
       double fnbytes_Af = 0.0;
       // Model for GenerateCoarseProblem.cpp
-      fnbytes_Af += fnrow_Af * ((double)sizeof(local_int_t));  // f2cOperator
-      fnbytes_Af += fnrow_Af * ((double)sizeof(double));       // rc
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(local_int_t));  // f2cOperator
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(double));       // rc
       fnbytes_Af +=
           2.0 * fncol_Af *
           ((double)sizeof(double));  // xc, Axf are estimated based on the size
@@ -292,16 +292,16 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
                                                  // Ac, rc, xc, Axf - (minor)
 
       // Model for GenerateProblem.cpp (called within GenerateCoarseProblem.cpp)
-      fnbytes_Af += fnrow_Af * sizeof(char);  // array nonzerosInRow
-      fnbytes_Af += fnrow_Af * ((double)sizeof(global_int_t*));  // mtxIndG
-      fnbytes_Af += fnrow_Af * ((double)sizeof(local_int_t*));   // mtxIndL
-      fnbytes_Af += fnrow_Af * ((double)sizeof(double*));        // matrixValues
-      fnbytes_Af += fnrow_Af * ((double)sizeof(double*));  // matrixDiagonal
-      fnbytes_Af += fnrow_Af * numberOfNonzerosPerRow *
+      fnbytes_Af += fffnrow_Af * sizeof(char);  // array nonzerosInRow
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(global_int_t*));  // mtxIndG
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(local_int_t*));   // mtxIndL
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(double*));  // matrixValues
+      fnbytes_Af += fffnrow_Af * ((double)sizeof(double*));  // matrixDiagonal
+      fnbytes_Af += fffnrow_Af * numberOfNonzerosPerRow *
                     ((double)sizeof(local_int_t));  // mtxIndL[1..nrows]
-      fnbytes_Af += fnrow_Af * numberOfNonzerosPerRow *
+      fnbytes_Af += fffnrow_Af * numberOfNonzerosPerRow *
                     ((double)sizeof(double));  // matrixValues[1..nrows]
-      fnbytes_Af += fnrow_Af * numberOfNonzerosPerRow *
+      fnbytes_Af += fffnrow_Af * numberOfNonzerosPerRow *
                     ((double)sizeof(global_int_t));  // mtxIndG[1..nrows]
 
       // Model for SetupHalo_ref.cpp

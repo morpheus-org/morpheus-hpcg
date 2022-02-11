@@ -40,7 +40,7 @@ class MixedBaseCounter {
   int cur_counts[32 + 1];  //!< current prime factor counts
 
  public:
-  MixedBaseCounter(int *counts, int length);
+  MixedBaseCounter(int *counts, int len);
   MixedBaseCounter(MixedBaseCounter &left, MixedBaseCounter &right);
   void next();
   int is_zero();

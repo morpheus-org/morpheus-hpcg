@@ -151,10 +151,10 @@ void ComputeOptimalShapeXYZ(int xyz, int& x, int& y, int& z) {
     int i, distinct_factors[32 + 1], count_factors[32 + 1];
 
     i = 0;
-    for (std::map<int, int>::iterator iter = factors.begin();
-         iter != factors.end(); ++iter, ++i) {
-      distinct_factors[i] = iter->first;
-      count_factors[i]    = iter->second;
+    for (std::map<int, int>::iterator it = factors.begin(); it != factors.end();
+         ++it, ++i) {
+      distinct_factors[i] = it->first;
+      count_factors[i]    = it->second;
     }
 
     // count total number of prime factors in "c_main" and distribute some
