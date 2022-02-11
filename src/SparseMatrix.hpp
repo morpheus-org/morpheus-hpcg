@@ -70,6 +70,10 @@ typedef std::map<global_int_t, local_int_t> GlobalToLocalMap;
 using GlobalToLocalMap = std::unordered_map<global_int_t, local_int_t>;
 #endif
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "Morpheus.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 struct SparseMatrix_STRUCT {
   char* title;     //!< name of the sparse matrix
   Geometry* geom;  //!< geometry associated with this matrix
@@ -139,6 +143,9 @@ inline void InitializeSparseMatrix(SparseMatrix& A, Geometry* geom) {
   A.mtxIndL               = 0;
   A.matrixValues          = 0;
   A.matrixDiagonal        = 0;
+#ifdef HPCG_WITH_MORPHEUS
+  A.optimizationData = 0;
+#endif
 
   // Optimization is ON by default. The code that switches it OFF is in the
   // functions that are meant to be optimized.
@@ -238,6 +245,14 @@ inline void DeleteMatrix(SparseMatrix& A) {
     delete A.mgData;
     A.mgData = 0;
   }  // Delete MG data
+
+#ifdef HPCG_WITH_MORPHEUS
+  if (A.optimizationData) {
+    delete (HPCG_Morpheus_Mat*)A.optimizationData;
+    A.optimizationData = nullptr;
+  }
+#endif
+
   return;
 }
 

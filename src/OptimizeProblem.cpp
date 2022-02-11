@@ -53,6 +53,15 @@
  */
 
 #include "OptimizeProblem.hpp"
+
+#ifdef HPCG_WITH_MORPHEUS
+#include "MorpheusUtils.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
+#if defined(HPCG_USE_MULTICOLORING)
+void multicolor(SparseMatrix& A);
+#endif
+
 /*!
   Optimizes the data structures used for CG iteration to increase the
   performance of the benchmark version of the preconditioned CG algorithm.
@@ -76,7 +85,39 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   // structures. Right now it does nothing, so compiling with a check for unused
   // variables results in complaints
 
+#ifdef HPCG_WITH_MORPHEUS
+  MorpheusInitializeSparseMatrix(A);
+  MorpheusOptimizeSparseMatrix(A);
+
+  MorpheusInitializeVector(b);
+  MorpheusInitializeVector(x);
+  MorpheusInitializeVector(xexact);
+  MorpheusOptimizeVector(b);
+  MorpheusOptimizeVector(x);
+  MorpheusOptimizeVector(xexact);
+
+  MorpheusInitializeVector(data.r);
+  MorpheusInitializeVector(data.z);
+  MorpheusInitializeVector(data.p);
+  MorpheusInitializeVector(data.Ap);
+  MorpheusOptimizeVector(data.r);
+  MorpheusOptimizeVector(data.z);
+  MorpheusOptimizeVector(data.p);
+  MorpheusOptimizeVector(data.Ap);
+#endif  // HPCG_WITH_MORPHEUS
+
 #if defined(HPCG_USE_MULTICOLORING)
+  multicolor(A);
+#endif  // HPCG_USE_MULTICOLORING
+
+  return 0;
+}
+
+// Helper function (see OptimizeProblem.hpp for details)
+double OptimizeProblemMemoryUse(const SparseMatrix& A) { return 0.0; }
+
+#if defined(HPCG_USE_MULTICOLORING)
+void multicolor(SparseMatrix& A) {
   const local_int_t nrow = A.localNumberOfRows;
   std::vector<local_int_t> colors(
       nrow, nrow);  // value `nrow' means `uninitialized'; initialized colors go
@@ -134,10 +175,5 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   // translate `colors' into a permutation
   for (local_int_t i = 0; i < nrow; ++i)  // for each color `c'
     colors[i] = counters[colors[i]]++;
-#endif
-
-  return 0;
 }
-
-// Helper function (see OptimizeProblem.hpp for details)
-double OptimizeProblemMemoryUse(const SparseMatrix& A) { return 0.0; }
+#endif  // HPCG_USE_MULTICOLORING

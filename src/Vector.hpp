@@ -58,6 +58,10 @@
 #include <cstdlib>
 #include "Geometry.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "Morpheus.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 struct Vector_STRUCT {
   local_int_t localLength;  //!< length of local portion of the vector
   double* values;           //!< array of values
@@ -143,6 +147,14 @@ inline void CopyVector(const Vector& v, Vector& w) {
 inline void DeleteVector(Vector& v) {
   delete[] v.values;
   v.localLength = 0;
+
+#ifdef HPCG_WITH_MORPHEUS
+  if (v.optimizationData) {
+    delete (HPCG_Morpheus_Vec*)v.optimizationData;
+    v.optimizationData = nullptr;
+  }
+#endif
+
   return;
 }
 
