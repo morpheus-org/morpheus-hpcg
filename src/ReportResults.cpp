@@ -133,11 +133,34 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
                           fnrow;  // 3 WAXPBYs with nrow adds and nrow mults
 
 #ifdef HPCG_WITH_MORPHEUS
-    auto host = ((HPCG_Morpheus_Mat*)A.optimizationData)->host;
+    auto Ahost = ((HPCG_Morpheus_Mat*)A.optimizationData)->host;
 #endif  // HPCG_WITH_MORPHEUS
 
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+    double fnops_sparsemv;
+    if (Ahost.format_enum() == Morpheus::COO_FORMAT) {
+      fnnz           = Ahost.nnnz();
+      fnops_sparsemv = (fniters + fNumberOfCgSets) *
+                       (2.0 * fnnz);  // 1 SpMV with nnz adds and nnz mults
+    } else if (Ahost.format_enum() == Morpheus::CSR_FORMAT) {
+      fnnz           = Ahost.nnnz();
+      fnops_sparsemv = (fniters + fNumberOfCgSets) *
+                       (2.0 * fnnz);  // 1 SpMV with nnz adds and nnz mults
+    } else if (Ahost.format_enum() == Morpheus::DIA_FORMAT) {
+      typename Morpheus::Dia::HostMirror Adia =
+          static_cast<typename Morpheus::Dia::HostMirror>(Ahost);
+
+      fnnz           = Adia.ncols() * Adia.ndiags();
+      fnops_sparsemv = (fniters + fNumberOfCgSets) *
+                       (2.0 * fnnz);  // 1 SpMV with ncols*ndiags adds and mults
+    } else {
+      throw Morpheus::RuntimeException("Selected invalid format.");
+    }
+#else
     double fnops_sparsemv = (fniters + fNumberOfCgSets) * 2.0 *
                             fnnz;  // 1 SpMV with nnz adds and nnz mults
+#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
+
     // Op counts from the multigrid preconditioners
     double fnops_precond   = 0.0;
     const SparseMatrix* Af = &A;
@@ -176,14 +199,64 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
     double fnwrites_waxpby =
         (3.0 * fniters + fNumberOfCgSets) * fnrow *
         sizeof(double);  // 3 WAXPBYs with nrow adds and nrow mults
+
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+    using IndexType = typename Morpheus::SparseMatrix::index_type;
+    using ValueType = typename Morpheus::SparseMatrix::value_type;
+    double fnreads_values, fnreads_indices, fnreads_sum;
+    double fnwrites_values, fnwrites_indices, fnwrites_sum;
+
+    if (Ahost.format_enum() == Morpheus::COO_FORMAT) {
+      fnreads_values  = Ahost.nnnz() * (double)sizeof(ValueType);
+      fnreads_indices = 2 * Ahost.nnnz() * (double)sizeof(IndexType);
+      fnreads_sum     = Ahost.nrows() * (double)sizeof(ValueType);
+
+      fnwrites_values  = 0;
+      fnwrites_indices = 0;
+      fnwrites_sum = (Ahost.nrows() + Ahost.nnnz()) * (double)sizeof(ValueType);
+
+    } else if (Ahost.format_enum() == Morpheus::CSR_FORMAT) {
+      fnreads_values  = Ahost.nnnz() * (double)sizeof(ValueType);
+      fnreads_indices = Ahost.nnnz() * (double)sizeof(IndexType);
+      fnreads_sum     = Ahost.nrows() * (double)sizeof(ValueType);
+
+      fnwrites_values  = 0;
+      fnwrites_indices = 0;
+      fnwrites_sum     = Ahost.nrows() * (double)sizeof(ValueType);
+    } else if (Ahost.format_enum() == Morpheus::DIA_FORMAT) {
+      typename Morpheus::Dia::HostMirror Adia = Ahost;
+      fnreads_values  = Adia.nnnz() * (double)sizeof(ValueType);
+      fnreads_indices = Adia.ndiags() * (double)sizeof(IndexType);
+      fnreads_sum     = Adia.nrows() * (double)sizeof(ValueType);
+
+      fnwrites_values  = 0.0;
+      fnwrites_indices = 0.0;
+      fnwrites_sum     = Adia.nrows() * (double)sizeof(ValueType);
+    } else {
+      throw Morpheus::RuntimeException("Selected invalid format.");
+    }
+
+    double fnreads_sparsemv =
+        (fniters + fNumberOfCgSets) *
+        (fnreads_indices + fnreads_values +
+         fnreads_sum);  // 1 SpMV with nnz reads of values, nnz reads
+                        // row indices, nnz reads of column indices
+
+    double fnwrites_sparsemv = (fniters + fNumberOfCgSets) *
+                               (fnwrites_indices + fnwrites_values +
+                                fnwrites_sum);  // 1 SpMV nnnz writes + nrows
+                                                // writes for initialization
+#else
     double fnreads_sparsemv =
         (fniters + fNumberOfCgSets) *
         (fnnz * (sizeof(double) + sizeof(local_int_t)) +
          fnrow * sizeof(double));  // 1 SpMV with nnz reads of values, nnz reads
                                    // indices,
-    // plus nrow reads of x
+                                   // plus nrow reads of x
     double fnwrites_sparsemv = (fniters + fNumberOfCgSets) * fnrow *
                                sizeof(double);  // 1 SpMV nrow writes
+#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
+
     // Op counts from the multigrid preconditioners
     double fnreads_precond  = 0.0;
     double fnwrites_precond = 0.0;
@@ -221,7 +294,6 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
     fnreads_precond +=
         fniters * (2.0 * fnnz_Af * (sizeof(double) + sizeof(local_int_t)) +
                    ffnrow_Af * sizeof(double));
-    ;  // One symmetric GS sweep at the coarsest level
     fnwrites_precond +=
         fniters * ffnrow_Af *
         sizeof(double);  // One symmetric GS sweep at the coarsest level
@@ -488,10 +560,10 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
 #ifdef HPCG_WITH_MORPHEUS
     doc.add("########## Morpheus Report ##########", "");
     doc.add("Morpheus", "");
-    doc.get("Morpheus")->add("Format", host.format_enum());
-    doc.get("Morpheus")->add("Rows", host.nrows());
-    doc.get("Morpheus")->add("Columns", host.ncols());
-    doc.get("Morpheus")->add("Non Zeros", host.nnnz());
+    doc.get("Morpheus")->add("Format", Ahost.format_enum());
+    doc.get("Morpheus")->add("Rows", Ahost.nrows());
+    doc.get("Morpheus")->add("Columns", Ahost.ncols());
+    doc.get("Morpheus")->add("Non Zeros", Ahost.nnnz());
 #endif
 
     doc.add("########## Performance Summary (times in sec) ##########", "");

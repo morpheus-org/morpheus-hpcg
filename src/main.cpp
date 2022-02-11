@@ -97,6 +97,8 @@ using std::endl;
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "MorpheusUtils.hpp"
+#include "Morpheus.hpp"
+Morpheus::InitArguments args;
 #endif  // HPCG_WITH_MORPHEUS
 
 /*!
@@ -129,7 +131,7 @@ int main(int argc, char* argv[]) {
       rank = params.comm_rank;  // Number of MPI processes, My process ID
 
 #ifdef HPCG_WITH_MORPHEUS
-  Morpheus::initialize(argc, argv, Morpheus::args, (0 == rank));
+  Morpheus::initialize(argc, argv, args, (0 == rank));
 #ifdef HPCG_DETAILED_DEBUG
   Morpheus::print_configuration(HPCG_fout);
 #endif  // HPCG_DETAILED_DEBUG

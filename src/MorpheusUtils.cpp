@@ -22,6 +22,7 @@
  */
 
 #include "MorpheusUtils.hpp"
+#include "Morpheus.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
 
@@ -52,6 +53,10 @@ void MorpheusOptimizeSparseMatrix(SparseMatrix& A) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
   Aopt->host              = Acsr;
 
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+  // In-place conversion w/ temporary allocation
+  Morpheus::convert(Aopt->host, args.dynamic_format);
+#endif
   // Now send to device
   Aopt->dev = Morpheus::create_mirror_container<Morpheus::Space>(Aopt->host);
   Morpheus::copy(Aopt->host, Aopt->dev);

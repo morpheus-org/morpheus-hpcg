@@ -57,10 +57,10 @@ using SparseMatrix = Morpheus::DynamicMatrix<double, local_int_t, Space>;
 using SparseMatrix = Csr;
 #endif
 
+}  // namespace Morpheus
 // used to hold any Morpheus related run-time arguments
 // e.g dynamic_format
-static Morpheus::InitArguments args;
-}  // namespace Morpheus
+extern Morpheus::InitArguments args;
 
 // Optimization data to be used by SparseMatrix
 struct HPCG_Morpheus_Mat_STRUCT {
