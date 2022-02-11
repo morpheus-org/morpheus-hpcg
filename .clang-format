@@ -1,0 +1,8 @@
+# Run manually to reformat a file:
+# clang-format -i --style=file <file>
+#Official Tool: clang-format version 8.0.0
+BasedOnStyle: google
+SortIncludes: false
+AlignConsecutiveAssignments: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true

@@ -1,3 +1,12 @@
+out
+*.swp
+src/*.o
+bin/HPCG-Benchmark_3*.txt
+bin/morpheus-hpcg
+bin/hpcg20*.txt
+.DS_Store
+build*
+
 # Prerequisites
 *.d
 
