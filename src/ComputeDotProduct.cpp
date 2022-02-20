@@ -87,8 +87,9 @@ int ComputeDotProduct(const local_int_t n, const Vector& x, const Vector& y,
                       double& result, double& time_allreduce,
                       bool& isOptimized) {
 #ifdef HPCG_WITH_MORPHEUS
-  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
-  HPCG_Morpheus_Vec* yopt = (HPCG_Morpheus_Vec*)y.optimizationData;
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* xopt = (Vector_t*)x.optimizationData;
+  Vector_t* yopt = (Vector_t*)y.optimizationData;
 
   double local_result = 0.0;
 

@@ -150,7 +150,8 @@ inline void DeleteVector(Vector& v) {
 
 #ifdef HPCG_WITH_MORPHEUS
   if (v.optimizationData) {
-    delete (HPCG_Morpheus_Vec*)v.optimizationData;
+    using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+    delete (Vector_t*)v.optimizationData;
     v.optimizationData = nullptr;
   }
 #endif

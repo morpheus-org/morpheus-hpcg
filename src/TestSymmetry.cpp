@@ -128,10 +128,11 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
   MorpheusOptimizeVector(y_ncol);
   MorpheusOptimizeVector(z_ncol);
 
-  HPCG_Morpheus_Vec* xncolopt  = (HPCG_Morpheus_Vec*)x_ncol.optimizationData;
-  HPCG_Morpheus_Vec* yncolopt  = (HPCG_Morpheus_Vec*)y_ncol.optimizationData;
-  HPCG_Morpheus_Vec* zncolopt  = (HPCG_Morpheus_Vec*)z_ncol.optimizationData;
-  HPCG_Morpheus_Vec* xexactopt = (HPCG_Morpheus_Vec*)xexact.optimizationData;
+  using Vector_t      = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* xncolopt  = (Vector_t*)x_ncol.optimizationData;
+  Vector_t* yncolopt  = (Vector_t*)y_ncol.optimizationData;
+  Vector_t* zncolopt  = (Vector_t*)z_ncol.optimizationData;
+  Vector_t* xexactopt = (Vector_t*)xexact.optimizationData;
 #endif
 
   // Next, compute x'*A*y

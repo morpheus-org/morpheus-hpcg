@@ -119,10 +119,11 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   Vector& Ap       = data.Ap;
 
 #ifdef HPCG_WITH_MORPHEUS
-  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
-  HPCG_Morpheus_Vec* ropt = (HPCG_Morpheus_Vec*)data.r.optimizationData;
-  HPCG_Morpheus_Vec* zopt = (HPCG_Morpheus_Vec*)data.z.optimizationData;
-  HPCG_Morpheus_Vec* popt = (HPCG_Morpheus_Vec*)data.p.optimizationData;
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* xopt = (Vector_t*)x.optimizationData;
+  Vector_t* ropt = (Vector_t*)data.r.optimizationData;
+  Vector_t* zopt = (Vector_t*)data.z.optimizationData;
+  Vector_t* popt = (Vector_t*)data.p.optimizationData;
 #endif
 
   if (!doPreconditioning && A.geom->rank == 0)

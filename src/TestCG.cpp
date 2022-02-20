@@ -121,7 +121,8 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   ReplaceMatrixDiagonal(A, exaggeratedDiagA);
 
 #ifdef HPCG_WITH_MORPHEUS
-  HPCG_Morpheus_Vec* bopt = (HPCG_Morpheus_Vec*)b.optimizationData;
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* bopt = (Vector_t*)b.optimizationData;
   MorpheusReplaceMatrixDiagonal(A, exaggeratedDiagA);
   Morpheus::copy(bopt->host, bopt->dev);
 #endif  // HPCG_WITH_MORPHEUS
@@ -179,7 +180,7 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   CopyVector(origB, b);
 
 #ifdef HPCG_WITH_MORPHEUS
-  using mirror = typename Morpheus::Vector::HostMirror;
+  using mirror = typename Morpheus::Vector<Morpheus::value_type>::HostMirror;
   MorpheusReplaceMatrixDiagonal(A, origDiagA);
   Morpheus::copy(mirror(origB.localLength, origB.values), bopt->dev);
 #endif  // HPCG_WITH_MORPHEUS
