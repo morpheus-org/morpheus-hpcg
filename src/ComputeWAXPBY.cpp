@@ -83,9 +83,10 @@ int ComputeWAXPBY(const local_int_t n, const double alpha, const Vector& x,
                   const double beta, const Vector& y, Vector& w,
                   bool& isOptimized) {
 #ifdef HPCG_WITH_MORPHEUS
-  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
-  HPCG_Morpheus_Vec* yopt = (HPCG_Morpheus_Vec*)y.optimizationData;
-  HPCG_Morpheus_Vec* wopt = (HPCG_Morpheus_Vec*)w.optimizationData;
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* xopt = (Vector_t*)x.optimizationData;
+  Vector_t* yopt = (Vector_t*)y.optimizationData;
+  Vector_t* wopt = (Vector_t*)w.optimizationData;
 
   isOptimized = true;
   Morpheus::waxpby<Morpheus::ExecSpace>(n, alpha, xopt->dev, beta, yopt->dev,
