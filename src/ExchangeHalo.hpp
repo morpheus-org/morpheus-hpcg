@@ -51,4 +51,9 @@
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
 void ExchangeHalo(const SparseMatrix& A, Vector& x);
+
+#ifdef HPCG_WITH_MORPHEUS
+void ExchangeHalo_Custom(const SparseMatrix& A, Vector& x);
+#endif  // HPCG_WITH_MORPHEUS
+
 #endif  // EXCHANGEHALO_HPP

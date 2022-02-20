@@ -146,5 +146,98 @@ void ExchangeHalo(const SparseMatrix &A, Vector &x) {
 
   return;
 }
+
+#ifdef HPCG_WITH_MORPHEUS
+void ExchangeHalo_Custom(const SparseMatrix &A, Vector &x) {
+  // Extract Matrix pieces
+
+  local_int_t localNumberOfRows = A.localNumberOfRows;
+  int num_neighbors             = A.numberOfSendNeighbors;
+  local_int_t *receiveLength    = A.receiveLength;
+  local_int_t *sendLength       = A.sendLength;
+  int *neighbors                = A.neighbors;
+  double *sendBuffer            = A.sendBuffer;
+
+  double *const xv = x.values;
+
+  int size, rank;  // Number of MPI processes, My process ID
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  //
+  //  first post receives, these are immediate receives
+  //  Do not wait for result to come, will do that at the
+  //  wait call below.
+  //
+
+  int MPI_MY_TAG = 99;
+
+  MPI_Request *request = new MPI_Request[num_neighbors];
+
+  //
+  // Externals are at end of locals
+  //
+  double *x_external = (double *)xv + localNumberOfRows;
+
+  // Post receives first
+  // TODO: Thread this loop
+  for (int i = 0; i < num_neighbors; i++) {
+    local_int_t n_recv = receiveLength[i];
+    MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG,
+              MPI_COMM_WORLD, request + i);
+    x_external += n_recv;
+  }
+
+  //
+  // Fill up send buffer
+  //
+
+  HPCG_Morpheus_Mat *Aopt = (HPCG_Morpheus_Mat *)A.optimizationData;
+
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t *xopt = (Vector_t *)x.optimizationData;
+
+  Morpheus::copy_by_key<Morpheus::ExecSpace>(Aopt->elementsToSend_d, xopt->dev,
+                                             Aopt->sendBuffer_d);
+  Morpheus::copy(Aopt->sendBuffer_d, Aopt->sendBuffer_h);
+
+  //
+  // Send to each neighbor
+  //
+
+  // TODO: Thread this loop
+  for (int i = 0; i < num_neighbors; i++) {
+    local_int_t n_send = sendLength[i];
+    MPI_Send(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG,
+             MPI_COMM_WORLD);
+    sendBuffer += n_send;
+  }
+
+  //
+  // Complete the reads issued above
+  //
+
+  MPI_Status status;
+  // TODO: Thread this loop
+  for (int i = 0; i < num_neighbors; i++) {
+    if (MPI_Wait(request + i, &status)) {
+      std::exit(-1);  // TODO: have better error exit
+    }
+  }
+
+  // send received elements to device in one go
+  using mirror =
+      typename Morpheus::UnmanagedVector<local_int_t>::HostMirror::type;
+  mirror elem_rec(num_neighbors, receiveLength);
+  auto total_received =
+      Morpheus::reduce<Kokkos::Serial>(elem_rec, num_neighbors);
+  Morpheus::copy(xopt->host, xopt->dev, localNumberOfRows,
+                 localNumberOfRows + total_received);
+
+  delete[] request;
+
+  return;
+}
+#endif  // HPCG_WITH_MORPHEUS
 #endif
 // ifndef HPCG_NO_MPI
