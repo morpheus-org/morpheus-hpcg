@@ -44,15 +44,20 @@ using ExecSpace = Kokkos::Cuda;
 using Space     = Kokkos::Cuda;
 #endif
 
+using value_type = double;
+
 // Morpheus Types
-using Vector = Morpheus::DenseVector<double, local_int_t, Space>;
-using UnmanagedVector =
-    Morpheus::DenseVector<double, local_int_t, Space, Kokkos::MemoryUnmanaged>;
-using Csr = Morpheus::CsrMatrix<double, local_int_t, Space>;
-using Dia = Morpheus::DiaMatrix<double, local_int_t, Space>;
+template <typename ValueType>
+using Vector = Morpheus::DenseVector<ValueType, local_int_t, Space>;
+template <typename ValueType>
+using UnmanagedVector = Morpheus::DenseVector<ValueType, local_int_t, Space,
+                                              Kokkos::MemoryUnmanaged>;
+
+using Csr = Morpheus::CsrMatrix<value_type, local_int_t, Space>;
+using Dia = Morpheus::DiaMatrix<value_type, local_int_t, Space>;
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
-using SparseMatrix = Morpheus::DynamicMatrix<double, local_int_t, Space>;
+using SparseMatrix = Morpheus::DynamicMatrix<value_type, local_int_t, Space>;
 #else
 using SparseMatrix = Csr;
 #endif
@@ -62,21 +67,31 @@ using SparseMatrix = Csr;
 // e.g dynamic_format
 extern Morpheus::InitArguments args;
 
+// Optimization data to be used by Vector
+template <typename ValueType>
+struct HPCG_Morpheus_Vec_STRUCT {
+  Morpheus::Vector<ValueType> dev;
+  typename Morpheus::Vector<ValueType>::HostMirror host;
+};
+
+template <typename ValueType>
+using HPCG_Morpheus_Vec = HPCG_Morpheus_Vec_STRUCT<ValueType>;
+
 // Optimization data to be used by SparseMatrix
 struct HPCG_Morpheus_Mat_STRUCT {
   Morpheus::SparseMatrix dev;
   typename Morpheus::SparseMatrix::HostMirror host;
+#ifndef HPCG_NO_MPI
+  using IndexVector = Morpheus::Vector<local_int_t>;
+  using ValueVector = Morpheus::Vector<Morpheus::value_type>;
+  IndexVector elementsToSend_d;
+  typename IndexVector::HostMirror elementsToSend_h;
+  ValueVector sendBuffer_d;
+  typename ValueVector::HostMirror sendBuffer_h;
+#endif  // HPCG_NO_MPI
 };
 
 typedef HPCG_Morpheus_Mat_STRUCT HPCG_Morpheus_Mat;
-
-// Optimization data to be used by Vector
-struct HPCG_Morpheus_Vec_STRUCT {
-  Morpheus::Vector dev;
-  typename Morpheus::Vector::HostMirror host;
-};
-
-typedef HPCG_Morpheus_Vec_STRUCT HPCG_Morpheus_Vec;
 
 #endif
 
