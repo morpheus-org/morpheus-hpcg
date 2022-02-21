@@ -35,6 +35,9 @@ void MorpheusOptimizeVector(Vector& v);
 void MorpheusZeroVector(Vector& v);
 void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
 
+#ifndef HPCG_NO_MPI
+void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x);
+#endif  // HPCG_NO_MPI
 #endif  // HPCG_WITH_MORPHEUS
 
 #endif  // HPCG_MORPHEUSUTILS_HPP

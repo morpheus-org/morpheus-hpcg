@@ -82,7 +82,7 @@
 int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
 #ifdef HPCG_WITH_MORPHEUS
 #ifndef HPCG_NO_MPI
-  ExchangeHalo_Custom(A, x);
+  MorpheusExchangeHalo(A, x);
 #endif  // HPCG_NO_MPI
   using Vector_t          = HPCG_Morpheus_Vec<Morpheus::value_type>;
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
