@@ -334,7 +334,7 @@ int main(int argc, char* argv[]) {
   //////////////////////////////
   // Optimized CG Setup Phase //
   //////////////////////////////
-
+  bool enable_timed_mg   = false;
   niters                 = 0;
   normr                  = 0.0;
   normr0                 = 0.0;
@@ -357,7 +357,7 @@ int main(int argc, char* argv[]) {
 #endif  // HPCG_WITH_MORPHEUS
     double last_cummulative_time = opt_times[0];
     ierr = CG(A, data, b, x, optMaxIters, refTolerance, niters, normr, normr0,
-              &opt_times[0], true);
+              &opt_times[0], enable_timed_mg);
     if (ierr) ++err_count;  // count the number of errors in CG
     if (normr / normr0 > refTolerance)
       ++tolerance_failures;  // the number of failures to reduce residual
@@ -421,7 +421,7 @@ int main(int argc, char* argv[]) {
     ZeroVector(x);  // Zero out x
 #endif  // HPCG_WITH_MORPHEUS
     ierr = CG(A, data, b, x, optMaxIters, optTolerance, niters, normr, normr0,
-              &times[0], true);
+              &times[0], enable_timed_mg);
     if (ierr) HPCG_fout << "Error in call to CG: " << ierr << ".\n" << endl;
     if (rank == 0)
       HPCG_fout << "Call [" << i << "] Scaled Residual [" << normr / normr0
