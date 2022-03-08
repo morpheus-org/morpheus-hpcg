@@ -91,3 +91,49 @@ $ make
 * HPCG_ENABLE_MORPHEUS_CUDA: BOOL
   * Whether to enable Morpheus Cuda Execution Space.
   * Default: OFF
+
+### Morpheus-HPCG on Isambard
+
+#### Run on cacade nodes: Cray-11 and MPICH
+```sh
+start_interactive macs cascade
+config_hpcg release cascade cray-11 mpich serial dynamic on off
+make -j
+OMP_NUM_THREADS=1 mpirun -n 20 ./morpheus-hpcg --morpheus-format=1 --kokkos-threads=1
+```
+
+#### Run on cacade nodes: Intel-20 and IntelMPI-20
+```sh
+start_interactive macs cascade
+config_hpcg release cascade intel-20 intelmpi-20 serial dynamic on off
+make -j
+OMP_NUM_THREADS=1 mpirun -n 20 ./morpheus-hpcg --morpheus-format=1 --kokkos-threads=1
+```
+
+#### Run on cacade nodes: LLVM-11 and OpenMPI
+```sh
+start_interactive macs cascade
+config_hpcg release cascade llvm-11 openmpi serial dynamic on off
+make -j
+OMP_NUM_THREADS=1 mpirun -n 20 ./morpheus-hpcg --morpheus-format=1 --kokkos-threads=1
+```
+
+#### Run on cacade nodes: GNU-10 and OpenMPI
+```sh
+start_interactive macs cascade
+config_hpcg release cascade gnu-10 openmpi serial dynamic on off
+make -j
+OMP_NUM_THREADS=1 mpirun -n 20 ./morpheus-hpcg --morpheus-format=1 --kokkos-threads=1
+```
+
+#### Run on V100 nodes: LLVM-10 and OpenMPI
+```sh
+start_interactive macs v100
+config_hpcg release v100 llvm-10 openmpi cuda dynamic on off
+make -j
+OMP_NUM_THREADS=1 mpirun -n 1 ./morpheus-hpcg --morpheus-format=1 --kokkos-threads=1 --kokkos-num-devices=1
+```
+
+#### Notes:
+
+* For V100: Cray/LLVM version must be smaller than 11 to be used with Cuda 11.2
