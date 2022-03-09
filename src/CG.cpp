@@ -172,7 +172,7 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
 #endif
     } else {
 #ifdef HPCG_WITH_MORPHEUS
-      Morpheus::copy(ropt->dev, zopt->host, 0, ropt->dev.size());
+      Morpheus::copy(ropt->dev, zopt->dev, 0, ropt->dev.size());
 #else
       CopyVector(r, z);  // copy r to z (no preconditioning)
 #endif  // HPCG_WITH_MORPHEUS
