@@ -138,6 +138,7 @@ void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
 
   // Extract Matrix pieces
 #if MPIX_CUDA_AWARE_SUPPORT
+  std::cout << "Cuda-Aware MPI" << std::endl;
   sendBuffer = Aopt->sendBuffer_d.data();
   xv         = xopt->dev.data();
 #else
@@ -162,7 +163,6 @@ void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
   // Externals are at end of locals
   //
   double* x_external = (double*)xv + localNumberOfRows;
-
   // Post receives first
   for (int i = 0; i < num_neighbors; i++) {
     local_int_t n_recv = receiveLength[i];
@@ -203,11 +203,11 @@ void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
 
 #if !MPIX_CUDA_AWARE_SUPPORT
   // send received elements to device in one go
-  using mirror =
-      typename Morpheus::UnmanagedVector<local_int_t>::HostMirror::type;
+  using mirror = typename Morpheus::UnmanagedVector<local_int_t>::HostMirror;
   mirror elem_rec(num_neighbors, receiveLength);
-  auto total_received =
-      Morpheus::reduce<Kokkos::Serial>(elem_rec, num_neighbors);
+  auto total_received = (num_neighbors > 0) ? Morpheus::reduce<Kokkos::Serial>(
+                                                  elem_rec, num_neighbors)
+                                            : 0;
   Morpheus::copy(xopt->host, xopt->dev, localNumberOfRows,
                  localNumberOfRows + total_received);
 #endif  // !MPIX_CUDA_AWARE_SUPPORT
