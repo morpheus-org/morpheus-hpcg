@@ -167,3 +167,5 @@ if(HPCG_ENABLE_MORPHEUS)
       FATAL_ERROR "Please enable an execution space to be used with HPCG.")
   endif()
 endif()
+
+target_compile_options(morpheus-hpcg PRIVATE -O3)
