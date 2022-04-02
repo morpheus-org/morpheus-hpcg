@@ -50,7 +50,7 @@
 #include <mpi.h>
 #endif
 
-#ifndef HPCG_NO_OPENMP
+#if (! defined(HPCG_NO_OPENMP)) || (defined(HPCG_WITH_KOKKOS_OPENMP))
 #include <omp.h>
 #endif
 
@@ -183,12 +183,20 @@ int HPCG_Init(int *argc_p, char ***argv_p, HPCG_Params &params) {
   params.comm_size  = 1;
 #endif
 
+#ifdef HPCG_WITH_MORPHEUS
+#if defined(HPCG_WITH_KOKKOS_OPENMP)
+  params.numThreads = omp_get_num_threads();
+#else
+  params.numThreads = 1;
+#endif  // HPCG_WITH_KOKKOS_OPENMP
+#else
 #ifdef HPCG_NO_OPENMP
   params.numThreads = 1;
 #else
 #pragma omp parallel
   params.numThreads = omp_get_num_threads();
-#endif
+#endif  // HPCG_NO_OPENMP
+#endif  // HPCG_WITH_MORPHEUS
   //  for (i = 0; i < nparams; ++i) std::cout << "rank = "<< params.comm_rank <<
   //  " iparam["<<i<<"] = " << iparams[i] << "\n";
 
