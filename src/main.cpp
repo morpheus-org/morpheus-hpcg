@@ -132,9 +132,15 @@ int main(int argc, char* argv[]) {
 
 #ifdef HPCG_WITH_MORPHEUS
   Morpheus::initialize(argc, argv, args, (0 == rank));
+
 #ifdef HPCG_DETAILED_DEBUG
   Morpheus::print_configuration(HPCG_fout);
 #endif  // HPCG_DETAILED_DEBUG
+
+#ifdef HPCG_WITH_KOKKOS_OPENMP
+  params.numThreads = Kokkos::OpenMP::concurrency();
+#endif  // HPCG_WITH_KOKKOS_OPENMP
+
   MORPHEUS_START_SCOPE();
 #endif  // HPCG_WITH_MORPHEUS
 
