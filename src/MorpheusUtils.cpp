@@ -64,7 +64,7 @@ void MorpheusOptimizeSparseMatrix(SparseMatrix& A) {
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert(Aopt->host, args.dynamic_format);
+  Morpheus::convert<Kokkos::Serial>(Aopt->host, args.dynamic_format);
 #endif
   // Now send to device
   Aopt->dev = Morpheus::create_mirror_container<Morpheus::Space>(Aopt->host);
