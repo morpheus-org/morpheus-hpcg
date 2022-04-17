@@ -138,7 +138,6 @@ void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
 
   // Extract Matrix pieces
 #if MPIX_CUDA_AWARE_SUPPORT
-  std::cout << "Cuda-Aware MPI" << std::endl;
   sendBuffer = Aopt->sendBuffer_d.data();
   xv         = xopt->dev.data();
 #else
