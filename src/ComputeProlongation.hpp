@@ -46,56 +46,9 @@
  *
  * ************************************************************************ */
 
-/*!
- @file ComputeWAXPBY.cpp
-
- HPCG routine
- */
-
-#include "ComputeWAXPBY.hpp"
-
-#ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
-#else
-#include "ComputeWAXPBY_ref.hpp"
-#endif  // HPCG_WITH_MORPHEUS
-
-/*!
-  Routine to compute the update of a vector with the sum of two
-  scaled vectors where: w = alpha*x + beta*y
-
-  This routine calls the reference WAXPBY implementation by default, but
-  can be replaced by a custom, optimized routine suited for
-  the target system.
-
-  @param[in] n the number of vector elements (on this processor)
-  @param[in] alpha, beta the scalars applied to x and y respectively.
-  @param[in] x, y the input vectors
-  @param[out] w the output vector
-  @param[out] isOptimized should be set to false if this routine uses the
-  reference implementation (is not optimized); otherwise leave it unchanged
-
-  @return returns 0 upon success and non-zero otherwise
-
-  @see ComputeWAXPBY_ref
-*/
-int ComputeWAXPBY(const local_int_t n, const double alpha, const Vector& x,
-                  const double beta, const Vector& y, Vector& w,
-                  bool& isOptimized) {
-#ifdef HPCG_WITH_MORPHEUS
-  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
-  Vector_t* xopt = (Vector_t*)x.optimizationData;
-  Vector_t* yopt = (Vector_t*)y.optimizationData;
-  Vector_t* wopt = (Vector_t*)w.optimizationData;
-
-  isOptimized = true;
-  Morpheus::waxpby<Morpheus::ExecSpace>(n, alpha, xopt->dev, beta, yopt->dev,
-                                        wopt->dev);
-
-  Kokkos::fence();
-  return 0;
-#else
-  isOptimized = false;
-  return ComputeWAXPBY_ref(n, alpha, x, beta, y, w);
-#endif
-}
+#ifndef COMPUTEPROLONGATION_HPP
+#define COMPUTEPROLONGATION_HPP
+#include "Vector.hpp"
+#include "SparseMatrix.hpp"
+int ComputeProlongation(const SparseMatrix& Af, Vector& xf);
+#endif  // COMPUTEPROLONGATION_HPP

@@ -162,14 +162,7 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   for (int k = 1; k <= max_iter && normr / normr0 > tolerance; k++) {
     TICK();
     if (doPreconditioning) {
-#ifdef HPCG_WITH_MORPHEUS
-      // Need to pass data to host as no Device support for MG by Morpheus
-      Morpheus::copy(ropt->dev, ropt->host);
-#endif
       ComputeMG(A, r, z);  // Apply preconditioner
-#ifdef HPCG_WITH_MORPHEUS
-      Morpheus::copy(zopt->host, zopt->dev);
-#endif
     } else {
 #ifdef HPCG_WITH_MORPHEUS
       Morpheus::copy(ropt->dev, zopt->dev, 0, ropt->dev.size());

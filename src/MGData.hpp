@@ -59,6 +59,10 @@
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
 
+#ifdef HPCG_WITH_MORPHEUS
+#include "Morpheus.hpp"
+#endif  // HPCG_WITH_MORPHEUS
+
 struct MGData_STRUCT {
   int numberOfPresmootherSteps;   // Call ComputeSYMGS this many times prior to
                                   // coarsening
@@ -74,6 +78,9 @@ struct MGData_STRUCT {
    used inside optimized ComputeSPMV().
    */
   void* optimizationData;
+#ifdef HPCG_WITH_MG
+  local_int_t f2cOperator_localLength;
+#endif  // HPCG_WITH_MG
 };
 typedef struct MGData_STRUCT MGData;
 
@@ -93,6 +100,7 @@ inline void InitializeMGData(local_int_t* f2cOperator, Vector* rc, Vector* xc,
   data.rc                        = rc;
   data.xc                        = xc;
   data.Axf                       = Axf;
+  data.optimizationData          = 0;
   return;
 }
 
@@ -109,6 +117,14 @@ inline void DeleteMGData(MGData& data) {
   delete data.Axf;
   delete data.rc;
   delete data.xc;
+
+#ifdef HPCG_WITH_MG
+  if (data.optimizationData) {
+    using MGData_t = HPCG_Morpheus_MGData;
+    delete (MGData_t*)data.optimizationData;
+    data.optimizationData = nullptr;
+  }
+#endif  // HPCG_WITH_MG
   return;
 }
 

@@ -85,7 +85,9 @@ add_executable(
   src/ComputeMG_ref.cpp
   src/ComputeMG.cpp
   src/ComputeProlongation_ref.cpp
+  src/ComputeProlongation.cpp
   src/ComputeRestriction_ref.cpp
+  src/ComputeRestriction.cpp
   src/GenerateCoarseProblem.cpp
   src/ComputeOptimalShapeXYZ.cpp
   src/MixedBaseCounter.cpp
@@ -136,6 +138,7 @@ option(HPCG_ENABLE_MORPHEUS_DYNAMIC
 option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
 option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
 option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
+option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
 
 if(HPCG_ENABLE_MORPHEUS)
   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
@@ -166,6 +169,11 @@ if(HPCG_ENABLE_MORPHEUS)
     message(
       FATAL_ERROR "Please enable an execution space to be used with HPCG.")
   endif()
+
+  if(HPCG_ENABLE_MG)
+    target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_MG)
+    message(STATUS "Preconditioner: MG (ON)")
+  endif()
 endif()
 
-target_compile_options(morpheus-hpcg PRIVATE -O3)
+# target_compile_options(morpheus-hpcg PRIVATE -O3)

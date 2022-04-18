@@ -130,7 +130,6 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
 
   using Vector_t      = HPCG_Morpheus_Vec<Morpheus::value_type>;
   Vector_t* xncolopt  = (Vector_t*)x_ncol.optimizationData;
-  Vector_t* yncolopt  = (Vector_t*)y_ncol.optimizationData;
   Vector_t* zncolopt  = (Vector_t*)z_ncol.optimizationData;
   Vector_t* xexactopt = (Vector_t*)xexact.optimizationData;
 #endif
@@ -163,29 +162,20 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
         << "Departure from symmetry (scaled) for SpMV abs(x'*A*y - y'*A*x) = "
         << testsymmetry_data.depsym_spmv << endl;
 
-    // Test symmetry of multi-grid
-#ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(yncolopt->dev, yncolopt->host);
-#endif
+  // Test symmetry of multi-grid
   // Compute x'*Minv*y
   ierr = ComputeMG(A, y_ncol, z_ncol);  // z_ncol = Minv*y_ncol
   if (ierr) HPCG_fout << "Error in call to MG: " << ierr << ".\n" << endl;
-#ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(zncolopt->host, zncolopt->dev);
-#endif
+
   double xtMinvy = 0.0;
   ierr           = ComputeDotProduct(nrow, x_ncol, z_ncol, xtMinvy, t4,
                                      A.isDotProductOptimized);  // x'*Minv*y
   if (ierr) HPCG_fout << "Error in call to dot: " << ierr << ".\n" << endl;
-#ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(xncolopt->dev, xncolopt->host);
-#endif
+
   // Next, compute z'*Minv*x
   ierr = ComputeMG(A, x_ncol, z_ncol);  // z_ncol = Minv*x_ncol
   if (ierr) HPCG_fout << "Error in call to MG: " << ierr << ".\n" << endl;
-#ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(zncolopt->host, zncolopt->dev);
-#endif
+
   double ytMinvx = 0.0;
   ierr           = ComputeDotProduct(nrow, y_ncol, z_ncol, ytMinvx, t4,
                                      A.isDotProductOptimized);  // y'*Minv*x

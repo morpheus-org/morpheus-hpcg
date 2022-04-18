@@ -142,8 +142,8 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
           // permit 2
   testcg_data.niters_max_no_prec = 0;
   testcg_data.niters_max_prec    = 0;
-  for (int k = 0; k < 2;
-       ++k) {  // This loop tests both unpreconditioned and preconditioned runs
+  // This loop tests both unpreconditioned and preconditioned runs
+  for (int k = 0; k < 2; ++k) {
     int expected_niters = testcg_data.expected_niters_no_prec;
     if (k == 1) expected_niters = testcg_data.expected_niters_prec;
     for (int i = 0; i < numberOfCgCalls; ++i) {

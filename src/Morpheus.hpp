@@ -60,9 +60,10 @@ using Dia = Morpheus::DiaMatrix<value_type, local_int_t, Space>;
 using SparseMatrix = Morpheus::DynamicMatrix<value_type, local_int_t, Space>;
 #else
 using SparseMatrix = Csr;
-#endif
+#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
 
 }  // namespace Morpheus
+
 // used to hold any Morpheus related run-time arguments
 // e.g dynamic_format
 extern Morpheus::InitArguments args;
@@ -93,6 +94,14 @@ struct HPCG_Morpheus_Mat_STRUCT {
 
 typedef HPCG_Morpheus_Mat_STRUCT HPCG_Morpheus_Mat;
 
-#endif
+#ifdef HPCG_WITH_MG
+// Optimization data to be used by MG
+struct HPCG_Morpheus_MGData_STRUCT {
+  HPCG_Morpheus_Vec<local_int_t> f2c;
+};
 
+typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
+#endif  // HPCG_WITH_MG
+
+#endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_HPP

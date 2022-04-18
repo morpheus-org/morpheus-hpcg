@@ -28,12 +28,21 @@
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
 
+#ifdef HPCG_WITH_MG
+#include "MGData.hpp"
+#endif  // HPCG_WITH_MG
+
 void MorpheusInitializeSparseMatrix(SparseMatrix& A);
 void MorpheusInitializeVector(Vector& v);
 void MorpheusOptimizeSparseMatrix(SparseMatrix& A);
 void MorpheusOptimizeVector(Vector& v);
 void MorpheusZeroVector(Vector& v);
 void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
+
+#ifdef HPCG_WITH_MG
+void MorpheusInitializeMGData(MGData& mg);
+void MorpheusOptimizeMGData(MGData& mg);
+#endif  // HPCG_WITH_MG
 
 #ifndef HPCG_NO_MPI
 void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x);

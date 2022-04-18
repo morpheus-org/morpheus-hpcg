@@ -81,13 +81,29 @@ void multicolor(SparseMatrix& A);
 */
 int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
                     Vector& xexact) {
-  // This function can be used to completely transform any part of the data
-  // structures. Right now it does nothing, so compiling with a check for unused
-  // variables results in complaints
-
 #ifdef HPCG_WITH_MORPHEUS
   MorpheusInitializeSparseMatrix(A);
   MorpheusOptimizeSparseMatrix(A);
+#ifdef HPCG_WITH_MG
+  // Process all coarse level matrices
+  SparseMatrix* M = A.Ac;
+  while (M != 0) {
+    MorpheusInitializeSparseMatrix(*M);
+    MorpheusOptimizeSparseMatrix(*M);
+    // Go to next level in hierarchy
+    M = M->Ac;
+  }
+
+  M          = &A;
+  MGData* mg = M->mgData;
+
+  while (mg != 0) {
+    M = M->Ac;
+    MorpheusInitializeMGData(*mg);
+    MorpheusOptimizeMGData(*mg);
+    mg = M->mgData;
+  }
+#endif  // HPCG_WITH_MG
 
   MorpheusInitializeVector(b);
   MorpheusInitializeVector(x);

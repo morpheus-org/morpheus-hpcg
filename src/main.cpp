@@ -315,17 +315,14 @@ int main(int argc, char* argv[]) {
     //////////////////////////////
     // Validation Testing Phase //
     //////////////////////////////
-
 #ifdef HPCG_DEBUG
   t1 = mytimer();
 #endif
   TestCGData testcg_data;
   testcg_data.count_pass = testcg_data.count_fail = 0;
   TestCG(A, data, b, x, testcg_data);
-
   TestSymmetryData testsymmetry_data;
   TestSymmetry(A, b, xexact, testsymmetry_data);
-
 #ifdef HPCG_DEBUG
   if (rank == 0)
     HPCG_fout << "Total validation (TestCG and TestSymmetry) execution time in "
@@ -340,7 +337,11 @@ int main(int argc, char* argv[]) {
   //////////////////////////////
   // Optimized CG Setup Phase //
   //////////////////////////////
-  bool enable_timed_mg   = false;
+#ifdef HPCG_WITH_MG
+  bool enable_timed_mg = true;
+#else
+  bool enable_timed_mg = false;
+#endif
   niters                 = 0;
   normr                  = 0.0;
   normr0                 = 0.0;

@@ -89,6 +89,8 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   Vector_t* xopt          = (Vector_t*)x.optimizationData;
   Vector_t* yopt          = (Vector_t*)y.optimizationData;
   Morpheus::multiply<Morpheus::ExecSpace>(Aopt->dev, xopt->dev, yopt->dev);
+
+  Kokkos::fence();
   return 0;
 #else
   A.isSpmvOptimized = false;

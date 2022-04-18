@@ -121,6 +121,33 @@ void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal) {
   Morpheus::update_diagonal<Morpheus::ExecSpace>(Aopt->dev, diag_dev);
 }
 
+#ifdef HPCG_WITH_MG
+void MorpheusInitializeMGData(MGData& mg) {
+  mg.optimizationData = new HPCG_Morpheus_MGData();
+
+  MorpheusInitializeVector(*mg.rc);
+  MorpheusInitializeVector(*mg.xc);
+  MorpheusInitializeVector(*mg.Axf);
+}
+
+void MorpheusOptimizeMGData(MGData& mg) {
+  using index_type_mirror =
+      typename Morpheus::UnmanagedVector<local_int_t>::HostMirror;
+  using MGData_t  = HPCG_Morpheus_MGData;
+  MGData_t* MGopt = (MGData_t*)mg.optimizationData;
+
+  MorpheusOptimizeVector(*mg.rc);
+  MorpheusOptimizeVector(*mg.xc);
+  MorpheusOptimizeVector(*mg.Axf);
+
+  MGopt->f2c.host =
+      index_type_mirror(mg.f2cOperator_localLength, mg.f2cOperator);
+  MGopt->f2c.dev =
+      Morpheus::create_mirror_container<Morpheus::Space>(MGopt->f2c.host);
+  Morpheus::copy(MGopt->f2c.host, MGopt->f2c.dev);
+}
+#endif  // HPCG_WITH_MG
+
 #ifndef HPCG_NO_MPI
 void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;

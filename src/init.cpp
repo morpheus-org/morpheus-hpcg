@@ -189,8 +189,6 @@ int HPCG_Init(int *argc_p, char ***argv_p, HPCG_Params &params) {
 #pragma omp parallel
   params.numThreads = omp_get_num_threads();
 #endif
-  //  for (i = 0; i < nparams; ++i) std::cout << "rank = "<< params.comm_rank <<
-  //  " iparam["<<i<<"] = " << iparams[i] << "\n";
 
   time(&rawtime);
   ptm = localtime(&rawtime);
