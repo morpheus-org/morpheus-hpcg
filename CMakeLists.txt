@@ -139,6 +139,10 @@ option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
 option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
 option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
 option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
+option(
+  HPCG_ENABLE_MULTI_FORMATS
+  "Enabling multiple formats across processes and MG levels using the input file."
+  ON)
 
 if(HPCG_ENABLE_MORPHEUS)
   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
@@ -173,6 +177,11 @@ if(HPCG_ENABLE_MORPHEUS)
   if(HPCG_ENABLE_MG)
     target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_MG)
     message(STATUS "Preconditioner: MG (ON)")
+  endif()
+
+  if(HPCG_ENABLE_MULTI_FORMATS)
+    target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_MULTI_FORMATS)
+    message(STATUS "Multiple Formats: ON")
   endif()
 endif()
 

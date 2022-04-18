@@ -26,6 +26,7 @@
 
 #ifdef HPCG_WITH_MORPHEUS
 #include <Morpheus_Core.hpp>
+#include "Geometry.hpp"  //local_int_t
 
 // TODO: Move this in Morpheus Core
 #define MORPHEUS_START_SCOPE() {  // Open Morpheus Scope
@@ -102,6 +103,21 @@ struct HPCG_Morpheus_MGData_STRUCT {
 
 typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
 #endif  // HPCG_WITH_MG
+
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include <vector>
+
+struct formats_struct {
+  std::vector<int> procid;
+  std::vector<int> lvlid;
+  std::vector<int> fmtid;
+  int nentries;
+
+  formats_struct() : procid(), lvlid(), fmtid(), nentries(0) {}
+};
+
+extern struct formats_struct fmt_tuple;
+#endif
 
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_HPP

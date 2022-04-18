@@ -47,8 +47,14 @@
  * ************************************************************************ */
 
 #include <cstdio>
-
+#include <iostream>
 #include "ReadHpcgDat.hpp"
+
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#include "Morpheus.hpp"
+
+struct formats_struct fmt_tuple;
+#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
 
 static int SkipUntilEol(FILE *stream) {
   int chOrEof;
@@ -77,6 +83,31 @@ int ReadHpcgDat(int *localDimensions, int *secondsPerRun,
 
   if (!hpcgStream) return -1;
 
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+
+  localDimensions     = nullptr;
+  secondsPerRun       = nullptr;
+  localProcDimensions = nullptr;
+  int procid, lvlid, fmtid;
+  int ctr = 0;
+  do {
+    // TODO: No fancy checks here yet.
+    if (fscanf(hpcgStream, "%d", &procid) != 1) {
+      break;
+    }
+    fscanf(hpcgStream, "%d", &lvlid);
+    fscanf(hpcgStream, "%d", &fmtid);
+
+    fmt_tuple.procid.push_back(procid);
+    fmt_tuple.lvlid.push_back(lvlid);
+    fmt_tuple.fmtid.push_back(fmtid);
+
+    ctr++;
+  } while (SkipUntilEol(hpcgStream) != EOF);
+
+  fmt_tuple.nentries = ctr;
+#else
+
   SkipUntilEol(hpcgStream);  // skip the first line
 
   SkipUntilEol(hpcgStream);  // skip the second line
@@ -102,6 +133,10 @@ int ReadHpcgDat(int *localDimensions, int *secondsPerRun,
         localProcDimensions[i] < 1)
       localProcDimensions[i] =
           0;  // value 0 means: "not specified" and it will be fixed later
+
+  std::cout << "Are we at end of file?? " << (SkipUntilEol(hpcgStream) == EOF)
+            << std::endl;
+#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
 
   fclose(hpcgStream);
 
