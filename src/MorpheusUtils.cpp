@@ -63,8 +63,19 @@ void MorpheusOptimizeSparseMatrix(SparseMatrix& A) {
   Aopt->host              = Acsr;
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+  int fmt_index = args.dynamic_format;
+#ifdef HPCG_WITH_MULTI_FORMATS
+  // select format based on the rank and coarse level
+  for (int i = 0; i < fmt_tuple.nentries; i++) {
+    if (MorpheusSparseMatrixGetRank(A) == fmt_tuple.procid[i] &&
+        MorpheusSparseMatrixGetCoarseLevel(A) == fmt_tuple.lvlid[i]) {
+      fmt_index = fmt_tuple.fmtid[i];
+      break;
+    }
+  }
+#endif  // HPCG_WITH_MULTI_FORMATS
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->host, args.dynamic_format);
+  Morpheus::convert<Kokkos::Serial>(Aopt->host, fmt_index);
 #endif
   // Now send to device
   Aopt->dev = Morpheus::create_mirror_container<Morpheus::Space>(Aopt->host);
@@ -119,6 +130,26 @@ void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal) {
 
   Morpheus::copy(diag, diag_dev);
   Morpheus::update_diagonal<Morpheus::ExecSpace>(Aopt->dev, diag_dev);
+}
+
+void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  Aopt->coarseLevel       = level;
+}
+
+void MorpheusSparseMatrixSetRank(SparseMatrix& A) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  Aopt->rank              = A.geom->rank;
+}
+
+int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  return Aopt->coarseLevel;
+}
+
+int MorpheusSparseMatrixGetRank(const SparseMatrix& A) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  return Aopt->rank;
 }
 
 #ifdef HPCG_WITH_MG

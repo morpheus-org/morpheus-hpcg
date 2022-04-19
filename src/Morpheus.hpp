@@ -69,6 +69,21 @@ using SparseMatrix = Csr;
 // e.g dynamic_format
 extern Morpheus::InitArguments args;
 
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include <vector>
+
+struct formats_struct {
+  std::vector<int> procid;
+  std::vector<int> lvlid;
+  std::vector<int> fmtid;
+  int nentries;
+
+  formats_struct() : procid(), lvlid(), fmtid(), nentries(0) {}
+};
+
+extern struct formats_struct fmt_tuple;
+#endif
+
 // Optimization data to be used by Vector
 template <typename ValueType>
 struct HPCG_Morpheus_Vec_STRUCT {
@@ -83,6 +98,8 @@ using HPCG_Morpheus_Vec = HPCG_Morpheus_Vec_STRUCT<ValueType>;
 struct HPCG_Morpheus_Mat_STRUCT {
   Morpheus::SparseMatrix dev;
   typename Morpheus::SparseMatrix::HostMirror host;
+  int coarseLevel;
+  local_int_t rank;
 #ifndef HPCG_NO_MPI
   using IndexVector = Morpheus::Vector<local_int_t>;
   using ValueVector = Morpheus::Vector<Morpheus::value_type>;
@@ -103,21 +120,6 @@ struct HPCG_Morpheus_MGData_STRUCT {
 
 typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
 #endif  // HPCG_WITH_MG
-
-#ifdef HPCG_WITH_MULTI_FORMATS
-#include <vector>
-
-struct formats_struct {
-  std::vector<int> procid;
-  std::vector<int> lvlid;
-  std::vector<int> fmtid;
-  int nentries;
-
-  formats_struct() : procid(), lvlid(), fmtid(), nentries(0) {}
-};
-
-extern struct formats_struct fmt_tuple;
-#endif
 
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_HPP

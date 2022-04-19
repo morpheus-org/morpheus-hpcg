@@ -83,12 +83,18 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
                     Vector& xexact) {
 #ifdef HPCG_WITH_MORPHEUS
   MorpheusInitializeSparseMatrix(A);
+  MorpheusSparseMatrixSetCoarseLevel(A, 0);
+  MorpheusSparseMatrixSetRank(A);
   MorpheusOptimizeSparseMatrix(A);
+
 #ifdef HPCG_WITH_MG
   // Process all coarse level matrices
   SparseMatrix* M = A.Ac;
+  int ctr         = 1;
   while (M != 0) {
     MorpheusInitializeSparseMatrix(*M);
+    MorpheusSparseMatrixSetCoarseLevel(*M, ctr++);
+    MorpheusSparseMatrixSetRank(*M);
     MorpheusOptimizeSparseMatrix(*M);
     // Go to next level in hierarchy
     M = M->Ac;
@@ -96,7 +102,6 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 
   M          = &A;
   MGData* mg = M->mgData;
-
   while (mg != 0) {
     M = M->Ac;
     MorpheusInitializeMGData(*mg);

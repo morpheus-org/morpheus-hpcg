@@ -133,9 +133,6 @@ int ReadHpcgDat(int *localDimensions, int *secondsPerRun,
         localProcDimensions[i] < 1)
       localProcDimensions[i] =
           0;  // value 0 means: "not specified" and it will be fixed later
-
-  std::cout << "Are we at end of file?? " << (SkipUntilEol(hpcgStream) == EOF)
-            << std::endl;
 #endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
 
   fclose(hpcgStream);

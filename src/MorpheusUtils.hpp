@@ -39,6 +39,11 @@ void MorpheusOptimizeVector(Vector& v);
 void MorpheusZeroVector(Vector& v);
 void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
 
+void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level);
+void MorpheusSparseMatrixSetRank(SparseMatrix& A);
+int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
+int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
+
 #ifdef HPCG_WITH_MG
 void MorpheusInitializeMGData(MGData& mg);
 void MorpheusOptimizeMGData(MGData& mg);
