@@ -50,12 +50,19 @@
 #define MYTIMER_HPP
 double mytimer(void);
 
+#ifdef HPCG_WITH_MORPHEUS
+double morpheus_timer(void);
+#endif  // HPCG_WITH_MORPEHUS
+
 #ifdef HPCG_WITH_MULTI_FORMATS
 #include <vector>
 extern std::vector<double> mtimers;
 extern std::vector<double> sub_mtimers;
 extern int ntimers;  // Timers per level
                      // SPMV,SYMGS,MG,Halo-swap,CG
+
+#define MTICK() t0 = morpheus_timer()  //!< record current time in 't0'
+#define MTOCK(t) t += morpheus_timer() - t0
 
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // MYTIMER_HPP

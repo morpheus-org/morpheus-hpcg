@@ -56,10 +56,13 @@
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "MorpheusUtils.hpp"
+
 #ifndef HPCG_NO_MPI
-#include "mytimer.hpp"
 #include "ExchangeHalo.hpp"
 #endif  // HPCG_NO_MPI
+
+#include "mytimer.hpp"
+
 #else
 #include "ComputeSPMV_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
@@ -82,11 +85,12 @@
 */
 int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
 #ifdef HPCG_WITH_MORPHEUS
+  double t_begin = morpheus_timer(), t0 = 0.0;
 #ifndef HPCG_NO_MPI
-  double t0      = 0.0;
-  double t_begin = mytimer();
+  double t1 = 0.0;
+  MTICK();
   MorpheusExchangeHalo(A, x);
-  t0 = mytimer() - t_begin;
+  MTOCK(t1);
 #endif  // HPCG_NO_MPI
 
   using Vector_t          = HPCG_Morpheus_Vec<Morpheus::value_type>;
@@ -97,12 +101,17 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
 
   Kokkos::fence();
 
-#if !defined(HPCG_NO_MPI) && defined(HPCG_WITH_MULTI_FORMATS)
+  t0 = morpheus_timer() - t_begin;
+#if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
     int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
-    sub_mtimers[offset + 3] += t0;  // Halo-Swap time
+    sub_mtimers[offset + 0] += t0;  // SPMV time
+#ifndef HPCG_NO_MPI
+    sub_mtimers[offset + 3] += t1;  // Halo-Swap time
+
+#endif  // HPCG_NO_MPI
   }
-#endif  // !HPCG_NO_MPI && HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MULTI_FORMATS
 
   return 0;
 #else

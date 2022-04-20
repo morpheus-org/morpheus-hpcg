@@ -213,18 +213,18 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   }
 
   // Store times
-  times[1] += t1;                   // dot-product time
-  times[2] += t2;                   // WAXPBY time
-  times[3] += t3;                   // SPMV time
-  times[4] += t4;                   // AllReduce time
-  times[5] += t5;                   // preconditioner apply time
-  times[0] += mytimer() - t_begin;  // Total time. All done...
+  times[1] += t1;  // dot-product time
+  times[2] += t2;  // WAXPBY time
+  times[3] += t3;  // SPMV time
+  times[4] += t4;  // AllReduce time
+  times[5] += t5;  // preconditioner apply time
+  double total_time = mytimer() - t_begin;
+  times[0] += total_time;  // Total time. All done...
 
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
     int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
-    sub_mtimers[offset + 0] += t3;                   // SPMV time
-    sub_mtimers[offset + 4] += mytimer() - t_begin;  // CG time
+    sub_mtimers[offset + 4] += total_time;  // CG time
   }
 #endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
 
