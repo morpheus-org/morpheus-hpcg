@@ -61,8 +61,9 @@ extern std::vector<double> sub_mtimers;
 extern int ntimers;  // Timers per level
                      // SPMV,SYMGS,MG,Halo-swap,CG
 
+#endif  // HPCG_WITH_MULTI_FORMATS
+
 #define MTICK() t0 = morpheus_timer()  //!< record current time in 't0'
 #define MTOCK(t) t += morpheus_timer() - t0
 
-#endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // MYTIMER_HPP

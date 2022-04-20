@@ -65,10 +65,11 @@
 #endif  // HPCG_WITH_MG
 
 #include "mytimer.hpp"
-
-#else
-#include "ComputeMG_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
+
+#ifndef HPCG_WITH_MG
+#include "ComputeMG_ref.hpp"
+#endif
 /*!
   @param[in] A the known system matrix
   @param[in] r the input vector
