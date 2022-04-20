@@ -60,4 +60,8 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
                    const TestNormsData& testnorms_data, int global_failure,
                    bool quickPath);
 
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+void ReportResults();
+#endif
+
 #endif  // REPORTRESULTS_HPP

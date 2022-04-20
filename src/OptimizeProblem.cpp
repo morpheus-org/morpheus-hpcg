@@ -58,6 +58,12 @@
 #include "MorpheusUtils.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
+#if defined(HPCG_WITH_MULTI_FORMATS) && defined(HPCG_WITH_MORPHEUS)
+std::vector<double> mtimers, sub_mtimers;
+int ntimers = 5;  // SPMV,SYMGS,MG,Halo-swap,CG
+
+#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
+
 #if defined(HPCG_USE_MULTICOLORING)
 void multicolor(SparseMatrix& A);
 #endif
@@ -87,13 +93,15 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   MorpheusSparseMatrixSetRank(A);
   MorpheusOptimizeSparseMatrix(A);
 
+  int levels = 1;
+  int nprocs = A.geom->size, rank = A.geom->rank;
+
 #ifdef HPCG_WITH_MG
   // Process all coarse level matrices
   SparseMatrix* M = A.Ac;
-  int ctr         = 1;
   while (M != 0) {
     MorpheusInitializeSparseMatrix(*M);
-    MorpheusSparseMatrixSetCoarseLevel(*M, ctr++);
+    MorpheusSparseMatrixSetCoarseLevel(*M, levels++);
     MorpheusSparseMatrixSetRank(*M);
     MorpheusOptimizeSparseMatrix(*M);
     // Go to next level in hierarchy
@@ -109,6 +117,16 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     mg = M->mgData;
   }
 #endif  // HPCG_WITH_MG
+
+#ifdef HPCG_WITH_MULTI_FORMATS
+  if (rank == 0) {
+    mtimers.resize(nprocs * levels * ntimers, 0);
+  } else {
+    mtimers.resize(0, 0);
+  }
+  // Local timers
+  sub_mtimers.resize(levels * ntimers, 0);
+#endif  // HPCG_WITH_MULTI_FORMATS
 
   MorpheusInitializeVector(b);
   MorpheusInitializeVector(x);

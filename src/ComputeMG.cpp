@@ -61,6 +61,12 @@
 #include "ComputeRestriction.hpp"
 #include "ComputeSPMV.hpp"
 #include "ComputeSYMGS.hpp"
+#include "mytimer.hpp"
+// Use TICK and TOCK to time a code section in MATLAB-like fashion
+#define TICK() t0 = mytimer()  //!< record current time in 't0'
+#define TOCK(t) \
+  t += mytimer() - t0  //!< store time difference in 't' using time in 't0'
+
 #else
 #include "ComputeMG_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG
@@ -76,8 +82,9 @@
 */
 int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
-  A.isMgOptimized = true;
+  double t_begin = mytimer(), t0 = 0.0, t1 = 0.0, t2 = 0.0;
 
+  A.isMgOptimized = true;
   assert(x.localLength ==
          A.localNumberOfColumns);  // Make sure x contain space for halo values
 
@@ -96,14 +103,19 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
     Morpheus::copy(xopt->dev, xopt->host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
     int numberOfPresmootherSteps = A.mgData->numberOfPresmootherSteps;
-    for (int i = 0; i < numberOfPresmootherSteps; ++i)
+    for (int i = 0; i < numberOfPresmootherSteps; ++i) {
+      TICK();
       ierr += ComputeSYMGS(A, r, x);
+      TOCK(t2);
+    }
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
     Morpheus::copy(xopt->host, xopt->dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
 
+    TICK();
     ierr = ComputeSPMV(A, x, *A.mgData->Axf);
+    TOCK(t1);
     if (ierr != 0) return ierr;
 
     // Perform restriction operation using simple injection
@@ -121,27 +133,40 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
     Morpheus::copy(xopt->dev, xopt->host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
     int numberOfPostsmootherSteps = A.mgData->numberOfPostsmootherSteps;
-    for (int i = 0; i < numberOfPostsmootherSteps; ++i)
+    for (int i = 0; i < numberOfPostsmootherSteps; ++i) {
+      TICK();
       ierr += ComputeSYMGS(A, r, x);
+      TOCK(t2);
+    }
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
     Morpheus::copy(xopt->host, xopt->dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
   } else {
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    // Copy r & x on host to perform SYMGS
     Morpheus::copy(ropt->dev, ropt->host);
     Morpheus::copy(xopt->dev, xopt->host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
+    TICK();
     ierr = ComputeSYMGS(A, r, x);
+    TOCK(t2);
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    // Copy x back on device
     Morpheus::copy(xopt->host, xopt->dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
   }
-  return 0;
 
+  t0 = mytimer() - t_begin;
+#if defined(HPCG_WITH_MULTI_FORMATS)
+  if (A.optimizationData != 0) {
+    int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
+    sub_mtimers[offset + 2] += t0;  // MG time
+    sub_mtimers[offset + 0] += t1;  // SPMV time
+    sub_mtimers[offset + 1] += t2;  // SYMGS time
+  }
+#endif  // HPCG_WITH_MULTI_FORMATS
+
+  return 0;
 #else
   A.isMgOptimized = false;
   return ComputeMG_ref(A, r, x);

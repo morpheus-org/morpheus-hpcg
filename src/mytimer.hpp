@@ -49,4 +49,13 @@
 #ifndef MYTIMER_HPP
 #define MYTIMER_HPP
 double mytimer(void);
+
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include <vector>
+extern std::vector<double> mtimers;
+extern std::vector<double> sub_mtimers;
+extern int ntimers;  // Timers per level
+                     // SPMV,SYMGS,MG,Halo-swap,CG
+
+#endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // MYTIMER_HPP

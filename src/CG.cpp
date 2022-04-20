@@ -109,9 +109,7 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   double rtz = 0.0, oldrtz = 0.0, alpha = 0.0, beta = 0.0, pAp = 0.0;
 
   double t0 = 0.0, t1 = 0.0, t2 = 0.0, t3 = 0.0, t4 = 0.0, t5 = 0.0;
-  //#ifndef HPCG_NO_MPI
-  //  double t6 = 0.0;
-  //#endif
+
   local_int_t nrow = A.localNumberOfRows;
   Vector& r        = data.r;  // Residual vector
   Vector& z        = data.z;  // Preconditioned residual vector
@@ -220,9 +218,15 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   times[3] += t3;                   // SPMV time
   times[4] += t4;                   // AllReduce time
   times[5] += t5;                   // preconditioner apply time
-                                    //#ifndef HPCG_NO_MPI
-                                    //  times[6] += t6; // exchange halo time
-                                    //#endif
   times[0] += mytimer() - t_begin;  // Total time. All done...
+
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+  if (A.optimizationData != 0) {
+    int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
+    sub_mtimers[offset + 0] += t3;                   // SPMV time
+    sub_mtimers[offset + 4] += mytimer() - t_begin;  // CG time
+  }
+#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
+
   return 0;
 }

@@ -68,6 +68,11 @@ using std::endl;
 #include "hpcg.hpp"
 #endif
 
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#include "mytimer.hpp"
+void ReportResults();
+#endif
+
 /*!
  Creates a YAML file and writes the information about the HPCG run, its results,
  and validity.
@@ -715,3 +720,53 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
   }
   return;
 }
+
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+int count_nprocs() {
+  int size = 1;
+#ifndef HPCG_NO_MPI
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+#endif
+  return size;
+}
+
+int count_nlevels() { return fmt_tuple.nentries / count_nprocs(); }
+
+void ReportResults() {
+  std::string eol = "\n", del = "\t";
+  std::string result = "";
+  std::vector<std::string> timers(
+      {"SPMV ", "SYMGS", "MG   ", "Halo ", "CG   "});
+
+  int id;
+  int nprocs  = count_nprocs();
+  int nlevels = count_nlevels();
+  int rank    = 0;
+
+#ifndef HPCG_NO_MPI
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Gather(sub_mtimers.data(), sub_mtimers.size(), MPI_DOUBLE, mtimers.data(),
+             sub_mtimers.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+#else
+  mtimers.assign(sub_mtimers.begin(), sub_mtimers.end())
+#endif
+
+  if (rank == 0) {
+    for (auto pid = 0; pid < nprocs; pid++) {
+      for (auto lid = 0; lid < nlevels; lid++) {
+        for (auto tid = 0; tid < ntimers; tid++) {
+          id = pid * nlevels * ntimers + lid * ntimers + tid;
+          std::stringstream val;
+          val << std::setprecision(14) << mtimers[id];
+          result += std::to_string(pid) + del + std::to_string(lid) + del +
+                    timers[tid] + del + val.str() + eol;
+        }
+      }
+    }
+
+    std::ofstream out("morpheus-output.txt");
+    out << result;
+  }
+}
+#endif

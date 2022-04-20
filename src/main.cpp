@@ -466,6 +466,10 @@ int main(int argc, char* argv[]) {
                 &times[0], testcg_data, testsymmetry_data, testnorms_data,
                 global_failure, quickPath);
 
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+  ReportResults();
+#endif
+
   // Clean up
   DeleteMatrix(A);  // This delete will recursively delete all coarse grid data
   DeleteCGData(data);
