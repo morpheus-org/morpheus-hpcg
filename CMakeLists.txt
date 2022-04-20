@@ -142,7 +142,7 @@ option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
 option(
   HPCG_ENABLE_MULTI_FORMATS
   "Enabling multiple formats across processes and MG levels using the input file."
-  ON)
+  OFF)
 
 if(HPCG_ENABLE_MORPHEUS)
   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
