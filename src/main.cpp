@@ -96,8 +96,8 @@ using std::endl;
 #include "TestNorms.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
-#include "Morpheus.hpp"
+#include "morpheus/Morpheus.hpp"
+#include "morpheus/Vector.hpp"
 Morpheus::InitArguments args;
 #endif  // HPCG_WITH_MORPHEUS
 
@@ -442,7 +442,7 @@ int main(int argc, char* argv[]) {
 #ifdef HPCG_DEBUG
 #ifdef HPCG_WITH_MORPHEUS
   HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
-  Morpheus::copy(xopt->dev, xopt->host);
+  Morpheus::copy(xopt->values.dev, xopt->values.host);
 #endif  // HPCG_WITH_MORPHEUS
   double residual = 0;
   ierr            = ComputeResidual(A.localNumberOfRows, x, xexact, residual);

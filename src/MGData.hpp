@@ -60,7 +60,7 @@
 #include "Vector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "Morpheus.hpp"
+#include "morpheus/MGData.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 struct MGData_STRUCT {

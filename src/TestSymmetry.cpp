@@ -74,7 +74,7 @@ using std::endl;
 #include "TestSymmetry.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
+#include "morpheus/Vector.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 /*!
@@ -192,7 +192,8 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
               << testsymmetry_data.depsym_mg << endl;
 
 #ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(xexactopt->host, xncolopt->host, 0, xexactopt->host.size());
+  Morpheus::copy(xexactopt->values.host, xncolopt->values.host, 0,
+                 xexactopt->values.host.size());
 #else
   CopyVector(xexact, x_ncol);  // Copy exact answer into overlap vector
 #endif
@@ -204,7 +205,7 @@ int TestSymmetry(SparseMatrix& A, Vector& b, Vector& xexact,
     if (ierr) HPCG_fout << "Error in call to SpMV: " << ierr << ".\n" << endl;
 #ifdef HPCG_WITH_MORPHEUS
     // Needed for computing residual on host
-    Morpheus::copy(zncolopt->dev, zncolopt->host);
+    Morpheus::copy(zncolopt->values.dev, zncolopt->values.host);
 #endif
     if ((ierr = ComputeResidual(A.localNumberOfRows, b, z_ncol, residual)))
       HPCG_fout << "Error in call to compute_residual: " << ierr << ".\n"

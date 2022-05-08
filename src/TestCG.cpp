@@ -70,7 +70,8 @@ using std::endl;
 #include "CG.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
+#include "morpheus/Vector.hpp"
+#include "morpheus/SparseMatrix.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 /*!
@@ -124,7 +125,7 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
   Vector_t* bopt = (Vector_t*)b.optimizationData;
   MorpheusReplaceMatrixDiagonal(A, exaggeratedDiagA);
-  Morpheus::copy(bopt->host, bopt->dev);
+  Morpheus::copy(bopt->values.host, bopt->values.dev);
 #endif  // HPCG_WITH_MORPHEUS
 
   int niters          = 0;
@@ -182,7 +183,7 @@ int TestCG(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 #ifdef HPCG_WITH_MORPHEUS
   using mirror = typename Morpheus::Vector<Morpheus::value_type>::HostMirror;
   MorpheusReplaceMatrixDiagonal(A, origDiagA);
-  Morpheus::copy(mirror(origB.localLength, origB.values), bopt->dev);
+  Morpheus::copy(mirror(origB.localLength, origB.values), bopt->values.dev);
 #endif  // HPCG_WITH_MORPHEUS
 
   // Delete vectors

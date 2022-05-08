@@ -55,7 +55,7 @@
 #include "ComputeWAXPBY.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
+#include "morpheus/Vector.hpp"
 #else
 #include "ComputeWAXPBY_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
@@ -89,8 +89,8 @@ int ComputeWAXPBY(const local_int_t n, const double alpha, const Vector& x,
   Vector_t* wopt = (Vector_t*)w.optimizationData;
 
   isOptimized = true;
-  Morpheus::waxpby<Morpheus::ExecSpace>(n, alpha, xopt->dev, beta, yopt->dev,
-                                        wopt->dev);
+  Morpheus::waxpby<Morpheus::ExecSpace>(n, alpha, xopt->values.dev, beta,
+                                        yopt->values.dev, wopt->values.dev);
 
   Kokkos::fence();
   return 0;

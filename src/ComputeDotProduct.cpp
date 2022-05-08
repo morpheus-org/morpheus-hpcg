@@ -55,11 +55,13 @@
 #include "ComputeDotProduct.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
+#include "morpheus/Vector.hpp"
+
 #ifndef HPCG_NO_MPI
 #include <mpi.h>
 #include "mytimer.hpp"
 #endif  // HPCG_NO_MPI
+
 #else
 #include "ComputeDotProduct_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
@@ -94,8 +96,9 @@ int ComputeDotProduct(const local_int_t n, const Vector& x, const Vector& y,
   double local_result = 0.0;
 
   time_allreduce += 0.0;
-  isOptimized  = true;
-  local_result = Morpheus::dot<Morpheus::ExecSpace>(n, xopt->dev, yopt->dev);
+  isOptimized = true;
+  local_result =
+      Morpheus::dot<Morpheus::ExecSpace>(n, xopt->values.dev, yopt->values.dev);
 
 #ifndef HPCG_NO_MPI
   // Use MPI's reduce function to collect all partial sums

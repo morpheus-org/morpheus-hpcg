@@ -49,7 +49,7 @@
 #include "ComputeProlongation.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
-#include "Morpheus.hpp"
+#include "morpheus/Morpheus.hpp"
 
 #ifdef HPCG_WITH_KOKKOS_CUDA
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
@@ -121,7 +121,8 @@ int ComputeProlongation(const SparseMatrix& Af, Vector& xf) {
   Vector_t* rcopt = (Vector_t*)Af.mgData->rc->optimizationData;
   Vector_t* xfopt = (Vector_t*)xf.optimizationData;
 
-  Prolongation_Impl(rcopt->dev.size(), xcopt->dev, MGopt->f2c.dev, xfopt->dev);
+  Prolongation_Impl(rcopt->values.dev.size(), xcopt->values.dev, MGopt->f2c.dev,
+                    xfopt->values.dev);
 #else
   ComputeProlongation_ref(Af, xf);
 #endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG

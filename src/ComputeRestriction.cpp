@@ -49,7 +49,7 @@
 #include "ComputeRestriction.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
-#include "Morpheus.hpp"
+#include "morpheus/Morpheus.hpp"
 
 #ifdef HPCG_WITH_KOKKOS_CUDA
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
@@ -125,7 +125,8 @@ int ComputeRestriction(const SparseMatrix& A, const Vector& rf) {
   Vector_t* rcopt  = (Vector_t*)A.mgData->rc->optimizationData;
   Vector_t* rfopt  = (Vector_t*)rf.optimizationData;
 
-  Restriction_Impl(Axfopt->dev, rfopt->dev, MGopt->f2c.dev, rcopt->dev);
+  Restriction_Impl(Axfopt->values.dev, rfopt->values.dev, MGopt->f2c.dev,
+                   rcopt->values.dev);
 #else
   ComputeRestriction_ref(A, rf);
 #endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG

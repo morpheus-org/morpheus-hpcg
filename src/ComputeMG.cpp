@@ -55,8 +55,10 @@
 #include "ComputeMG.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS)
-#include "Morpheus.hpp"
-#include "MorpheusUtils.hpp"
+#include "morpheus/Morpheus.hpp"
+#include "morpheus/SparseMatrix.hpp"
+#include "morpheus/Vector.hpp"
+
 #if defined(HPCG_WITH_MG)
 #include "ComputeProlongation.hpp"
 #include "ComputeRestriction.hpp"
@@ -99,8 +101,8 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
   int ierr = 0;
   if (A.mgData != 0) {  // Go to next coarse level if defined
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(ropt->dev, ropt->host);
-    Morpheus::copy(xopt->dev, xopt->host);
+    Morpheus::copy(ropt->values.dev, ropt->values.host);
+    Morpheus::copy(xopt->values.dev, xopt->values.host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
     int numberOfPresmootherSteps = A.mgData->numberOfPresmootherSteps;
     for (int i = 0; i < numberOfPresmootherSteps; ++i) {
@@ -110,7 +112,7 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
     }
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(xopt->host, xopt->dev);
+    Morpheus::copy(xopt->values.host, xopt->values.dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
 
     MTICK();
@@ -129,8 +131,8 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
     if (ierr != 0) return ierr;
 
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(ropt->dev, ropt->host);
-    Morpheus::copy(xopt->dev, xopt->host);
+    Morpheus::copy(ropt->values.dev, ropt->values.host);
+    Morpheus::copy(xopt->values.dev, xopt->values.host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
     int numberOfPostsmootherSteps = A.mgData->numberOfPostsmootherSteps;
     for (int i = 0; i < numberOfPostsmootherSteps; ++i) {
@@ -140,19 +142,19 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
     }
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(xopt->host, xopt->dev);
+    Morpheus::copy(xopt->values.host, xopt->values.dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
   } else {
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(ropt->dev, ropt->host);
-    Morpheus::copy(xopt->dev, xopt->host);
+    Morpheus::copy(ropt->values.dev, ropt->values.host);
+    Morpheus::copy(xopt->values.dev, xopt->values.host);
 #endif  // HPCG_WITH_KOKKOS_CUDA
     MTICK();
     ierr = ComputeSYMGS(A, r, x);
     MTOCK(t2);
     if (ierr != 0) return ierr;
 #ifdef HPCG_WITH_KOKKOS_CUDA
-    Morpheus::copy(xopt->host, xopt->dev);
+    Morpheus::copy(xopt->values.host, xopt->values.dev);
 #endif  // HPCG_WITH_KOKKOS_CUDA
   }
 

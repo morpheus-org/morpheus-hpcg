@@ -65,7 +65,8 @@
 #include "mytimer.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
+#include "morpheus/SparseMatrix.hpp"
+#include "morpheus/Vector.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 // Use TICK and TOCK to time a code section in MATLAB-like fashion
@@ -134,7 +135,8 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
 #endif
 // p is of length ncols, copy x to p for sparse MV operation
 #ifdef HPCG_WITH_MORPHEUS
-  Morpheus::copy(xopt->dev, popt->dev, 0, xopt->dev.size());
+  Morpheus::copy(xopt->values.dev, popt->values.dev, 0,
+                 xopt->values.dev.size());
 #else
   CopyVector(x, p);
 #endif  // HPCG_WITH_MORPHEUS
@@ -163,7 +165,8 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
       ComputeMG(A, r, z);  // Apply preconditioner
     } else {
 #ifdef HPCG_WITH_MORPHEUS
-      Morpheus::copy(ropt->dev, zopt->dev, 0, ropt->dev.size());
+      Morpheus::copy(ropt->values.dev, zopt->values.dev, 0,
+                     ropt->values.dev.size());
 #else
       CopyVector(r, z);  // copy r to z (no preconditioning)
 #endif  // HPCG_WITH_MORPHEUS

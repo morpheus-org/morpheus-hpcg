@@ -55,11 +55,10 @@
 #include "ComputeSPMV.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "MorpheusUtils.hpp"
-
-#ifndef HPCG_NO_MPI
-#include "ExchangeHalo.hpp"
-#endif  // HPCG_NO_MPI
+#include "morpheus/SparseMatrix.hpp"
+#include "morpheus/Vector.hpp"
+#include "morpheus/ExchangeHalo.hpp"
+#include "morpheus/ReadHpcgDat.hpp"
 
 #include "mytimer.hpp"
 
@@ -97,10 +96,17 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
   Vector_t* xopt          = (Vector_t*)x.optimizationData;
   Vector_t* yopt          = (Vector_t*)y.optimizationData;
-  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->dev, xopt->dev, yopt->dev);
 
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->local.dev, xopt->local.dev,
+                                          yopt->local.dev);
+  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->ghost.dev, xopt->ghost.dev,
+                                          yopt->ghost.dev);
+#else
+  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->values.dev, xopt->values.dev,
+                                          yopt->values.dev);
+#endif
   Kokkos::fence();
-
   t0 = morpheus_timer() - t_begin;
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
