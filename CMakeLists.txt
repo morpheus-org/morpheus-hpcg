@@ -48,52 +48,30 @@ option(HPCG_ENABLE_MPI "Enable MPI support" OFF)
 option(HPCG_ENABLE_LONG_LONG
        "Enable use of 'long long' type for global indices" ON)
 option(HPCG_ENABLE_OPENMP "Enable OpenMP support" OFF)
+# Build with Morpheus
+option(HPCG_ENABLE_MORPHEUS "Enable Morpheus library" OFF)
+option(HPCG_ENABLE_MORPHEUS_DYNAMIC
+       "Enable Morpheus library with dynamic matrix support" OFF)
+option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
+option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
+option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
+option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
+option(
+  HPCG_ENABLE_MULTI_FORMATS
+  "Enabling multiple formats across processes and MG levels using the input file."
+  OFF)
+option(
+  HPCG_ENABLE_SPLIT_DISTRIBUTED
+  "Enabling split between on-process and ghost elements of the local matrix."
+  OFF)
 
-add_executable(
-  morpheus-hpcg
-  src/main.cpp
-  src/CG.cpp
-  src/CG_ref.cpp
-  src/TestCG.cpp
-  src/ComputeResidual.cpp
-  src/ExchangeHalo.cpp
-  src/GenerateGeometry.cpp
-  src/GenerateProblem.cpp
-  src/GenerateProblem_ref.cpp
-  src/CheckProblem.cpp
-  src/OptimizeProblem.cpp
-  src/ReadHpcgDat.cpp
-  src/ReportResults.cpp
-  src/SetupHalo.cpp
-  src/SetupHalo_ref.cpp
-  src/TestSymmetry.cpp
-  src/TestNorms.cpp
-  src/WriteProblem.cpp
-  src/YAML_Doc.cpp
-  src/YAML_Element.cpp
-  src/ComputeDotProduct.cpp
-  src/ComputeDotProduct_ref.cpp
-  src/finalize.cpp
-  src/init.cpp
-  src/mytimer.cpp
-  src/ComputeSPMV.cpp
-  src/ComputeSPMV_ref.cpp
-  src/ComputeSYMGS.cpp
-  src/ComputeSYMGS_ref.cpp
-  src/ComputeWAXPBY.cpp
-  src/ComputeWAXPBY_ref.cpp
-  src/ComputeMG_ref.cpp
-  src/ComputeMG.cpp
-  src/ComputeProlongation_ref.cpp
-  src/ComputeProlongation.cpp
-  src/ComputeRestriction_ref.cpp
-  src/ComputeRestriction.cpp
-  src/GenerateCoarseProblem.cpp
-  src/ComputeOptimalShapeXYZ.cpp
-  src/MixedBaseCounter.cpp
-  src/CheckAspectRatio.cpp
-  src/OutputFile.cpp
-  src/MorpheusUtils.cpp)
+set(HPCG_SOURCES)
+append_glob(HPCG_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+if(HPCG_ENABLE_MORPHEUS)
+  append_glob(HPCG_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/morpheus/*.cpp)
+endif()
+message(STATUS "SOURCES ARE:: ${HPCG_SOURCES}") # REMOVE
+add_executable(morpheus-hpcg ${HPCG_SOURCES})
 
 if(HPCG_ENABLE_CONTIGUOUS_ARRAYS)
   target_compile_definitions(morpheus-hpcg PRIVATE HPCG_CONTIGUOUS_ARRAYS)
@@ -130,19 +108,6 @@ if(HPCG_ENABLE_OPENMP)
 else()
   target_compile_definitions(morpheus-hpcg PRIVATE HPCG_NO_OPENMP)
 endif()
-
-# Build with Morpheus
-option(HPCG_ENABLE_MORPHEUS "Enable Morpheus library" OFF)
-option(HPCG_ENABLE_MORPHEUS_DYNAMIC
-       "Enable Morpheus library with dynamic matrix support" OFF)
-option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
-option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
-option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
-option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
-option(
-  HPCG_ENABLE_MULTI_FORMATS
-  "Enabling multiple formats across processes and MG levels using the input file."
-  OFF)
 
 if(HPCG_ENABLE_MORPHEUS)
   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
@@ -182,6 +147,12 @@ if(HPCG_ENABLE_MORPHEUS)
   if(HPCG_ENABLE_MULTI_FORMATS)
     target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_MULTI_FORMATS)
     message(STATUS "Multiple Formats: ON")
+  endif()
+
+  if(HPCG_ENABLE_SPLIT_DISTRIBUTED)
+    target_compile_definitions(morpheus-hpcg
+                               PRIVATE HPCG_WITH_SPLIT_DISTRIBUTED)
+    message(STATUS "Split distributed data structures: ON")
   endif()
 endif()
 
