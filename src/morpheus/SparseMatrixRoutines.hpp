@@ -1,5 +1,5 @@
 /**
- * FormatSelector.hpp
+ * SparseMatrix.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,11 +21,21 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_FORMATSELECTOR_HPP
-#define HPCG_MORPHEUS_FORMATSELECTOR_HPP
+#ifndef HPCG_MORPHEUS_SPARSEMATRIXROUTINES_HPP
+#define HPCG_MORPHEUS_SPARSEMATRIXROUTINES_HPP
 
+#ifdef HPCG_WITH_MORPHEUS
 #include "SparseMatrix.hpp"
+#include "Vector.hpp"
 
-int GetFormat(SparseMatrix &A);
+void MorpheusInitializeSparseMatrix(SparseMatrix& A);
+void MorpheusOptimizeSparseMatrix(SparseMatrix& A);
+void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
 
-#endif  // HPCG_MORPHEUS_FORMATSELECTOR_HPP
+void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level);
+void MorpheusSparseMatrixSetRank(SparseMatrix& A);
+int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
+int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
+
+#endif  // HPCG_WITH_MORPHEUS
+#endif  // HPCG_MORPHEUS_SPARSEMATRIXROUTINES_HPP

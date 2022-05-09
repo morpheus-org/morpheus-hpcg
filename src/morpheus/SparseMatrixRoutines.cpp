@@ -1,5 +1,5 @@
 /**
- * SparseMatrix.cpp
+ * SparseMatrixRoutines.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,6 +21,7 @@
  * limitations under the License.
  */
 
+#include "morpheus/SparseMatrixRoutines.hpp"
 #include "morpheus/SparseMatrix.hpp"
 #include "morpheus/FormatSelector.hpp"
 

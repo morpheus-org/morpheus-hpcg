@@ -1,5 +1,5 @@
 /**
- * MGData.cpp
+ * MGDataRoutines.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,34 +21,17 @@
  * limitations under the License.
  */
 
-#include "morpheus/MGData.hpp"
+#ifndef HPCG_MORPHEUS_MGDATAROUTINES_HPP
+#define HPCG_MORPHEUS_MGDATAROUTINES_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
 #ifdef HPCG_WITH_MG
-void MorpheusInitializeMGData(MGData& mg) {
-  mg.optimizationData = new HPCG_Morpheus_MGData();
 
-  MorpheusInitializeVector(*mg.rc);
-  MorpheusInitializeVector(*mg.xc);
-  MorpheusInitializeVector(*mg.Axf);
-}
+#include "MGData.hpp"
 
-void MorpheusOptimizeMGData(MGData& mg) {
-  using index_type_mirror =
-      typename Morpheus::UnmanagedVector<local_int_t>::HostMirror;
-  using MGData_t  = HPCG_Morpheus_MGData;
-  MGData_t* MGopt = (MGData_t*)mg.optimizationData;
-
-  MorpheusOptimizeVector(*mg.rc);
-  MorpheusOptimizeVector(*mg.xc);
-  MorpheusOptimizeVector(*mg.Axf);
-
-  MGopt->f2c.host =
-      index_type_mirror(mg.f2cOperator_localLength, mg.f2cOperator);
-  MGopt->f2c.dev =
-      Morpheus::create_mirror_container<Morpheus::Space>(MGopt->f2c.host);
-  Morpheus::copy(MGopt->f2c.host, MGopt->f2c.dev);
-}
+void MorpheusInitializeMGData(MGData& mg);
+void MorpheusOptimizeMGData(MGData& mg);
 
 #endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
+#endif  // HPCG_MORPHEUS_MGDATAROUTINES_HPP

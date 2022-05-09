@@ -25,21 +25,16 @@
 #define HPCG_MORPHEUS_MGDATA_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "SparseMatrix.hpp"
+#ifdef HPCG_WITH_MG
 
-#include "morpheus/Morpheus.hpp"  //local_int_t
 #include "morpheus/Vector.hpp"
 
-#ifdef HPCG_WITH_MG
 // Optimization data to be used by MG
 struct HPCG_Morpheus_MGData_STRUCT {
   Morpheus_Vec<local_int_t> f2c;
 };
 
 typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
-
-void MorpheusInitializeMGData(MGData& mg);
-void MorpheusOptimizeMGData(MGData& mg);
 
 #endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS

@@ -1,5 +1,5 @@
 /**
- * MorpheusVector.cpp
+ * VectorRoutines.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,6 +21,7 @@
  * limitations under the License.
  */
 
+#include "morpheus/VectorRoutines.hpp"
 #include "morpheus/Vector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS

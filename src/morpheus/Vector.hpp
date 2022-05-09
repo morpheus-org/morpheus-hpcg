@@ -25,8 +25,6 @@
 #define HPCG_MORPHEUS_VECTOR_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "Vector.hpp"
-
 #include "morpheus/Morpheus.hpp"  //local_int_t
 
 namespace Morpheus {
@@ -67,14 +65,6 @@ struct HPCG_Morpheus_Vec_STRUCT {
 
 template <typename ValueType>
 using HPCG_Morpheus_Vec = HPCG_Morpheus_Vec_STRUCT<ValueType>;
-
-void MorpheusInitializeVector(Vector& v);
-void MorpheusOptimizeVector(Vector& v);
-void MorpheusZeroVector(Vector& v);
-
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-void MorpheusSplitVector(Vector& v, local_int_t localNumberOfRows);
-#endif
 
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_VECTOR_HPP

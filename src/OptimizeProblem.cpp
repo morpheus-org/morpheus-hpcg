@@ -55,9 +55,9 @@
 #include "OptimizeProblem.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/SparseMatrix.hpp"
-#include "morpheus/Vector.hpp"
-#include "morpheus/MGData.hpp"
+#include "morpheus/SparseMatrixRoutines.hpp"
+#include "morpheus/VectorRoutines.hpp"
+#include "morpheus/MGDataRoutines.hpp"
 #include "morpheus/ReadHpcgDat.hpp"
 
 #if defined(HPCG_WITH_MULTI_FORMATS)

@@ -25,7 +25,6 @@
 #define HPCG_MORPHEUS_SPARSEMATRIX_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "SparseMatrix.hpp"
 
 #include "morpheus/Morpheus.hpp"  //local_int_t
 #include "morpheus/Vector.hpp"
@@ -67,15 +66,6 @@ struct HPCG_Morpheus_Mat_STRUCT {
 };
 
 typedef HPCG_Morpheus_Mat_STRUCT HPCG_Morpheus_Mat;
-
-void MorpheusInitializeSparseMatrix(SparseMatrix& A);
-void MorpheusOptimizeSparseMatrix(SparseMatrix& A);
-void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
-
-void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level);
-void MorpheusSparseMatrixSetRank(SparseMatrix& A);
-int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
-int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
 
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_SPARSEMATRIX_HPP
