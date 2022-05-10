@@ -56,6 +56,7 @@
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "morpheus/Morpheus_SparseMatrix.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #include "morpheus/Morpheus_Vector.hpp"
 #include "morpheus/Morpheus_ExchangeHalo.hpp"
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"

@@ -24,6 +24,6 @@
 #ifndef HPCG_MORPHEUS_READHPCGDAT_HPP
 #define HPCG_MORPHEUS_READHPCGDAT_HPP
 
-void ReadMorpheusDat();
+int ReadMorpheusDat();
 
 #endif  // HPCG_MORPHEUS_READHPCGDAT_HPP

@@ -27,8 +27,9 @@
 #ifdef HPCG_WITH_MORPHEUS
 
 #ifdef HPCG_WITH_MULTI_FORMATS
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"
-#endif
+#endif  // HPCG_WITH_MULTI_FORMATS
 
 int GetFormat(SparseMatrix &A) {
   int fmt_index = args.dynamic_format;

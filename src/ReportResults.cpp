@@ -68,10 +68,14 @@ using std::endl;
 #include "hpcg.hpp"
 #endif
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#if defined(HPCG_WITH_MORPHEUS)
+#if defined(HPCG_WITH_MULTI_FORMATS)
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
+
 #include "mytimer.hpp"
 void ReportResults();
-#endif
+#endif  // HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
  Creates a YAML file and writes the information about the HPCG run, its results,
@@ -727,7 +731,8 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
   return;
 }
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#if defined(HPCG_WITH_MORPHEUS)
+#if defined(HPCG_WITH_MULTI_FORMATS)
 int count_nprocs() {
   int size = 1;
 #ifndef HPCG_NO_MPI
@@ -775,4 +780,5 @@ void ReportResults() {
     out << result;
   }
 }
-#endif
+#endif  // HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MORPHEUS

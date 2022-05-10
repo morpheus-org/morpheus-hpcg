@@ -53,5 +53,20 @@ using index_type = local_int_t;
 // e.g dynamic_format
 extern Morpheus::InitArguments args;
 
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include <vector>
+
+struct formats_struct {
+  std::vector<int> procid;
+  std::vector<int> lvlid;
+  std::vector<int> fmtid;
+  int nentries;
+
+  formats_struct() : procid(), lvlid(), fmtid(), nentries(0) {}
+};
+
+extern struct formats_struct fmt_tuple;
+#endif
+
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_HPP

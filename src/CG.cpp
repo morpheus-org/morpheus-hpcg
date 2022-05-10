@@ -65,7 +65,7 @@
 #include "mytimer.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Morpheus_SparseMatrix.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #include "morpheus/Morpheus_Vector.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
@@ -224,12 +224,14 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   double total_time = mytimer() - t_begin;
   times[0] += total_time;  // Total time. All done...
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#if defined(HPCG_WITH_MORPHEUS)
+#if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
     int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
     sub_mtimers[offset + 4] += total_time;  // CG time
   }
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MORPHEUS
 
   return 0;
 }

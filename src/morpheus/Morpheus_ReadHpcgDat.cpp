@@ -23,7 +23,10 @@
 
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#if defined(HPCG_WITH_MORPHEUS)
+#if defined(HPCG_WITH_MULTI_FORMATS)
+
+#include "morpheus/Morpheus.hpp"
 
 struct formats_struct fmt_tuple;
 
@@ -48,7 +51,7 @@ static int SkipUntilEol(FILE *stream) {
   return chOrEof;
 }
 
-void ReadMorpheusDat() {
+int ReadMorpheusDat() {
   FILE *morpheusStream = fopen("Morpheus.dat", "r");
 
   if (!morpheusStream) return -1;
@@ -73,6 +76,9 @@ void ReadMorpheusDat() {
   fmt_tuple.nentries = ctr;
 
   fclose(morpheusStream);
+
+  return 0;
 }
 
+#endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MULTI_FORMATS
