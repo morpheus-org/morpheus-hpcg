@@ -74,7 +74,7 @@ using std::endl;
 #include "TestSymmetry.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 /*!

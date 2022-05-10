@@ -1,5 +1,5 @@
 /**
- * SparseMatrix.hpp
+ * Morpheus_SparseMatrix.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -27,7 +27,7 @@
 #ifdef HPCG_WITH_MORPHEUS
 
 #include "morpheus/Morpheus.hpp"  //local_int_t
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 
 namespace Morpheus {
 using Csr = Morpheus::CsrMatrix<value_type, local_int_t, Space>;
@@ -40,7 +40,6 @@ using SparseMatrix = Csr;
 #endif  // HPCG_WITH_MORPHEUS_DYNAMIC
 }  // namespace Morpheus
 
-template <typename ValueType>
 struct Morpheus_Mat_STRUCT {
   Morpheus::SparseMatrix dev;
   typename Morpheus::SparseMatrix::HostMirror host;
@@ -60,6 +59,9 @@ struct HPCG_Morpheus_Mat_STRUCT {
   int coarseLevel;
   local_int_t rank;
 #ifndef HPCG_NO_MPI
+  using IndexVector = typename Morpheus_Vec<local_int_t>::type;
+  using ValueVector = typename Morpheus_Vec<Morpheus::value_type>::type;
+
   Morpheus_Vec<local_int_t> elementsToSend;
   Morpheus_Vec<Morpheus::value_type> sendBuffer;
 #endif  // HPCG_NO_MPI

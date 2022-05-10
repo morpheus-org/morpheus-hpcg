@@ -1,5 +1,5 @@
 /**
- * ExchangeHalo.hpp
+ * Morpheus_FormatSelector.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,17 +21,11 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_EXCHANGEHALO_HPP
-#define HPCG_MORPHEUS_EXCHANGEHALO_HPP
-
-#ifdef HPCG_WITH_MORPHEUS
-#ifndef HPCG_NO_MPI
+#ifndef HPCG_MORPHEUS_FORMAT_SELECTOR_HPP
+#define HPCG_MORPHEUS_FORMAT_SELECTOR_HPP
 
 #include "SparseMatrix.hpp"
-#include "Vector.hpp"
 
-void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x)
+int GetFormat(SparseMatrix &A);
 
-#endif  // HPCG_NO_MPI
-#endif  // HPCG_WITH_MORPHEUS
-#endif  // HPCG_MORPHEUS_EXCHANGEHALO_HPP
+#endif  // HPCG_MORPHEUS_FORMAT_SELECTOR_HPP

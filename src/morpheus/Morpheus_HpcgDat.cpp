@@ -1,5 +1,5 @@
 /**
- * ReadHpcgDat.cpp
+ * Morpheus_ReadHpcgDat.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,7 +21,7 @@
  * limitations under the License.
  */
 
-#include "morpheus/ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
 

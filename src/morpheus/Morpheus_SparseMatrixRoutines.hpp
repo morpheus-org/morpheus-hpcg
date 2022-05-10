@@ -1,5 +1,5 @@
 /**
- * ReadHpcgDat.hpp
+ * Morpheus_SparseMatrix.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,9 +21,21 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_READHPCGDAT_HPP
-#define HPCG_MORPHEUS_READHPCGDAT_HPP
+#ifndef HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP
+#define HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP
 
-void ReadMorpheusDat();
+#ifdef HPCG_WITH_MORPHEUS
+#include "SparseMatrix.hpp"
+#include "Vector.hpp"
 
-#endif  // HPCG_MORPHEUS_READHPCGDAT_HPP
+void MorpheusInitializeSparseMatrix(SparseMatrix& A);
+void MorpheusOptimizeSparseMatrix(SparseMatrix& A);
+void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
+
+void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level);
+void MorpheusSparseMatrixSetRank(SparseMatrix& A);
+int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
+int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
+
+#endif  // HPCG_WITH_MORPHEUS
+#endif  // HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP

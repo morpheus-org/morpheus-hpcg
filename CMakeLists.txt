@@ -35,6 +35,11 @@ project(
   DESCRIPTION
     "High Performance Conjugate Gradient Benchmark (HPCG) using Morpheus")
 
+macro(APPEND_GLOB VAR)
+  file(GLOB LOCAL_TMP_VAR ${ARGN})
+  list(APPEND ${VAR} ${LOCAL_TMP_VAR})
+endmacro()
+
 #
 # Options
 #
@@ -70,8 +75,10 @@ append_glob(HPCG_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 if(HPCG_ENABLE_MORPHEUS)
   append_glob(HPCG_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/morpheus/*.cpp)
 endif()
-message(STATUS "SOURCES ARE:: ${HPCG_SOURCES}") # REMOVE
+
 add_executable(morpheus-hpcg ${HPCG_SOURCES})
+target_include_directories(morpheus-hpcg
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(HPCG_ENABLE_CONTIGUOUS_ARRAYS)
   target_compile_definitions(morpheus-hpcg PRIVATE HPCG_CONTIGUOUS_ARRAYS)

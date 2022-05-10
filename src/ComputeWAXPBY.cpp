@@ -55,7 +55,7 @@
 #include "ComputeWAXPBY.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 #else
 #include "ComputeWAXPBY_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS

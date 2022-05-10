@@ -1,5 +1,5 @@
 /**
- * MGDataRoutines.hpp
+ * Morpheus_FormatSelector.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,17 +21,30 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_MGDATAROUTINES_HPP
-#define HPCG_MORPHEUS_MGDATAROUTINES_HPP
+#include "morpheus/Morpheus_FormatSelector.hpp"
+#include "morpheus/Morpheus_SparseMatrix.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
 
-#include "MGData.hpp"
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
+#endif
 
-void MorpheusInitializeMGData(MGData& mg);
-void MorpheusOptimizeMGData(MGData& mg);
+int GetFormat(SparseMatrix &A) {
+  int fmt_index = args.dynamic_format;
 
-#endif  // HPCG_WITH_MG
+#ifdef HPCG_WITH_MULTI_FORMATS
+  // select format based on the rank and coarse level
+  for (int i = 0; i < fmt_tuple.nentries; i++) {
+    if (MorpheusSparseMatrixGetRank(A) == fmt_tuple.procid[i] &&
+        MorpheusSparseMatrixGetCoarseLevel(A) == fmt_tuple.lvlid[i]) {
+      fmt_index = fmt_tuple.fmtid[i];
+      break;
+    }
+  }
+#endif  // HPCG_WITH_MULTI_FORMATS
+
+  return fmt_index;
+}
+
 #endif  // HPCG_WITH_MORPHEUS
-#endif  // HPCG_MORPHEUS_MGDATAROUTINES_HPP

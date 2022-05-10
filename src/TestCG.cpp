@@ -70,8 +70,8 @@ using std::endl;
 #include "CG.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Vector.hpp"
-#include "morpheus/SparseMatrix.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 /*!

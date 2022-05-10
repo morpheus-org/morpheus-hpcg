@@ -97,7 +97,7 @@ using std::endl;
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "morpheus/Morpheus.hpp"
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
 Morpheus::InitArguments args;
 #endif  // HPCG_WITH_MORPHEUS
 

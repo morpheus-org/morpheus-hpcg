@@ -1,5 +1,5 @@
 /**
- * Vector.hpp
+ * Morpheus_Vector.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -39,6 +39,7 @@ using UnmanagedVector = Morpheus::DenseVector<ValueType, local_int_t, Space,
 // Optimization data to be used by Vector
 template <typename ValueType>
 struct Morpheus_Vec_STRUCT {
+  using type = Morpheus::Vector<ValueType>;
   Morpheus::Vector<ValueType> dev;
   typename Morpheus::Vector<ValueType>::HostMirror host;
 };

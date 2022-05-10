@@ -1,5 +1,5 @@
 /**
- * SparseMatrixRoutines.cpp
+ * Morpheus_SparseMatrixRoutines.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,9 +21,9 @@
  * limitations under the License.
  */
 
-#include "morpheus/SparseMatrixRoutines.hpp"
-#include "morpheus/SparseMatrix.hpp"
-#include "morpheus/FormatSelector.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
+#include "morpheus/Morpheus_SparseMatrix.hpp"
+#include "morpheus/Morpheus_FormatSelector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
 
@@ -84,14 +84,14 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
     Acsr.row_offsets(i + 1) = Acsr.row_offsets(i) + A.nonzerosInRow[i];
   }
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
-  Aopt->host              = Acsr;
+  Aopt->values.host       = Acsr;
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
   Morpheus::convert<Kokkos::Serial>(Aopt->values.host, GetFormat(A));
 #endif
   // Now send to device
-  Aopt->dev =
+  Aopt->values.dev =
       Morpheus::create_mirror_container<Morpheus::Space>(Aopt->values.host);
   Morpheus::copy(Aopt->values.host, Aopt->values.dev);
 }
@@ -103,6 +103,8 @@ void MorpheusOptimizeSparseMatrix(SparseMatrix& A) {
 #ifndef HPCG_NO_MPI
   using index_mirror = typename HPCG_Morpheus_Mat::IndexVector::HostMirror;
   using value_mirror = typename HPCG_Morpheus_Mat::ValueVector::HostMirror;
+
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
 
   // Handle buffer of elements to be send across processes
   Aopt->elementsToSend.host = index_mirror(A.totalToBeSent, A.elementsToSend);

@@ -1,5 +1,5 @@
 /**
- * ExchangeHalo.cpp
+ * Morpheus_ExchangeHalo.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,9 +21,11 @@
  * limitations under the License.
  */
 
-#include "morpheus/ExchangeHalo.hpp"
+#include "morpheus/Morpheus_ExchangeHalo.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
+
+#include "morpheus/Morpheus_SparseMatrix.hpp"
 
 #ifndef HPCG_NO_MPI
 #include <mpi.h>

@@ -59,7 +59,7 @@
 #include "Geometry.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 struct Vector_STRUCT {

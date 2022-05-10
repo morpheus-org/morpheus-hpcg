@@ -71,7 +71,7 @@ using GlobalToLocalMap = std::unordered_map<global_int_t, local_int_t>;
 #endif
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/SparseMatrix.hpp"
+#include "morpheus/Morpheus_SparseMatrix.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 struct SparseMatrix_STRUCT {

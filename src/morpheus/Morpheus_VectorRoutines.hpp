@@ -1,5 +1,5 @@
 /**
- * MGData.hpp
+ * Morpheus_VectorRoutines.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,21 +21,19 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_MGDATA_HPP
-#define HPCG_MORPHEUS_MGDATA_HPP
+#ifndef HPCG_MORPHEUS_VECTOR_ROUTINES_HPP
+#define HPCG_MORPHEUS_VECTOR_ROUTINES_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
+#include "Vector.hpp"
 
-#include "morpheus/Vector.hpp"
+void MorpheusInitializeVector(Vector& v);
+void MorpheusOptimizeVector(Vector& v);
+void MorpheusZeroVector(Vector& v);
 
-// Optimization data to be used by MG
-struct HPCG_Morpheus_MGData_STRUCT {
-  Morpheus_Vec<local_int_t> f2c;
-};
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+void MorpheusSplitVector(Vector& v, local_int_t localNumberOfRows);
+#endif
 
-typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
-
-#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
-#endif  // HPCG_MORPHEUS_MGDATA_HPP
+#endif  // HPCG_MORPHEUS_VECTOR_ROUTINES_HPP

@@ -1,5 +1,5 @@
 /**
- * VectorRoutines.hpp
+ * Morpheus_ReadHpcgDat.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,19 +21,9 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_VECTORROUTINES_HPP
-#define HPCG_MORPHEUS_VECTORROUTINES_HPP
+#ifndef HPCG_MORPHEUS_READHPCGDAT_HPP
+#define HPCG_MORPHEUS_READHPCGDAT_HPP
 
-#ifdef HPCG_WITH_MORPHEUS
-#include "Vector.hpp"
+void ReadMorpheusDat();
 
-void MorpheusInitializeVector(Vector& v);
-void MorpheusOptimizeVector(Vector& v);
-void MorpheusZeroVector(Vector& v);
-
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-void MorpheusSplitVector(Vector& v, local_int_t localNumberOfRows);
-#endif
-
-#endif  // HPCG_WITH_MORPHEUS
-#endif  // HPCG_MORPHEUS_VECTORROUTINES_HPP
+#endif  // HPCG_MORPHEUS_READHPCGDAT_HPP

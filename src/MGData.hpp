@@ -56,11 +56,12 @@
 #define MGDATA_HPP
 
 #include <cassert>
-#include "SparseMatrix.hpp"
 #include "Vector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/MGData.hpp"
+#ifdef HPCG_WITH_MG
+#include "morpheus/Morpheus_MGData.hpp"
+#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
 
 struct MGData_STRUCT {

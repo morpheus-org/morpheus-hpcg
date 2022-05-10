@@ -1,4 +1,3 @@
-
 //@HEADER
 // ***************************************************
 //
@@ -56,8 +55,9 @@
 
 #if defined(HPCG_WITH_MORPHEUS)
 #include "morpheus/Morpheus.hpp"
-#include "morpheus/SparseMatrix.hpp"
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
 
 #if defined(HPCG_WITH_MG)
 #include "ComputeProlongation.hpp"

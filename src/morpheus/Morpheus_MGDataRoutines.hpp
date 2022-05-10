@@ -1,5 +1,5 @@
 /**
- * FormatSelector.hpp
+ * Morpheus_MGDataRoutines.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,11 +21,17 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_FORMATSELECTOR_HPP
-#define HPCG_MORPHEUS_FORMATSELECTOR_HPP
+#ifndef HPCG_MORPHEUS_MGDATA_ROUTINES_HPP
+#define HPCG_MORPHEUS_MGDATA_ROUTINES_HPP
 
-#include "SparseMatrix.hpp"
+#ifdef HPCG_WITH_MORPHEUS
+#ifdef HPCG_WITH_MG
 
-int GetFormat(SparseMatrix &A);
+#include "MGData.hpp"
 
-#endif  // HPCG_MORPHEUS_FORMATSELECTOR_HPP
+void MorpheusInitializeMGData(MGData& mg);
+void MorpheusOptimizeMGData(MGData& mg);
+
+#endif  // HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
+#endif  // HPCG_MORPHEUS_MGDATA_ROUTINES_HPP

@@ -1,5 +1,5 @@
 /**
- * MGDataRoutines.cpp
+ * Morpheus_MGDataRoutines.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,11 +21,14 @@
  * limitations under the License.
  */
 
-#include "morpheus/MGDataRoutines.hpp"
-#include "morpheus/MGData.hpp"
+#include "morpheus/Morpheus_MGDataRoutines.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
 #ifdef HPCG_WITH_MG
+
+#include "morpheus/Morpheus_MGData.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
+
 void MorpheusInitializeMGData(MGData& mg) {
   mg.optimizationData = new HPCG_Morpheus_MGData();
 

@@ -55,7 +55,7 @@
 #include "ComputeDotProduct.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 
 #ifndef HPCG_NO_MPI
 #include <mpi.h>

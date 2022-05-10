@@ -55,10 +55,10 @@
 #include "OptimizeProblem.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/SparseMatrixRoutines.hpp"
-#include "morpheus/VectorRoutines.hpp"
-#include "morpheus/MGDataRoutines.hpp"
-#include "morpheus/ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
+#include "morpheus/Morpheus_MGDataRoutines.hpp"
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
 int ntimers = 5;  // SPMV,SYMGS,MG,Halo-swap,CG

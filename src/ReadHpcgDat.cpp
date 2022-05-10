@@ -51,7 +51,7 @@
 #include "ReadHpcgDat.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
-#include "morpheus/ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
 #endif
 
 static int SkipUntilEol(FILE *stream) {

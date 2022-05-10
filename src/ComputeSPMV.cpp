@@ -55,10 +55,10 @@
 #include "ComputeSPMV.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/SparseMatrix.hpp"
-#include "morpheus/Vector.hpp"
-#include "morpheus/ExchangeHalo.hpp"
-#include "morpheus/ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_SparseMatrix.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
+#include "morpheus/Morpheus_ExchangeHalo.hpp"
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
 
 #include "mytimer.hpp"
 

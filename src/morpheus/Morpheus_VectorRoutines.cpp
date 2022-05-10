@@ -1,5 +1,5 @@
 /**
- * VectorRoutines.cpp
+ * Morpheus_VectorRoutines.cpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,8 +21,8 @@
  * limitations under the License.
  */
 
-#include "morpheus/VectorRoutines.hpp"
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_VectorRoutines.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
 
@@ -47,7 +47,7 @@ void MorpheusOptimizeVector(Vector& v) {
 void MorpheusZeroVector(Vector& v) {
   using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
   Vector_t* vopt = (Vector_t*)v.optimizationData;
-  vopt->dev.assign(vopt->dev.size(), 0);  // Zero out x on device
+  vopt->values.dev.assign(vopt->values.dev.size(), 0);  // Zero out x on device
 }
 
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)

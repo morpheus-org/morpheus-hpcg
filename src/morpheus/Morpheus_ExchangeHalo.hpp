@@ -1,5 +1,5 @@
 /**
- * MorpheusUtils.hpp
+ * Morpheus_ExchangeHalo.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,34 +21,17 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUSUTILS_HPP
-#define HPCG_MORPHEUSUTILS_HPP
+#ifndef HPCG_MORPHEUS_EXCHANGE_HALO_HPP
+#define HPCG_MORPHEUS_EXCHANGE_HALO_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
+#ifndef HPCG_NO_MPI
+
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
 
-#ifdef HPCG_WITH_MG
-#include "MGData.hpp"
-#endif  // HPCG_WITH_MG
-
-void MorpheusInitializeSparseMatrix(SparseMatrix& A);
-void MorpheusOptimizeSparseMatrix(SparseMatrix& A);
-void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal);
-
-void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level);
-void MorpheusSparseMatrixSetRank(SparseMatrix& A);
-int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
-int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
-
-#ifdef HPCG_WITH_MG
-void MorpheusInitializeMGData(MGData& mg);
-void MorpheusOptimizeMGData(MGData& mg);
-#endif  // HPCG_WITH_MG
-
-#ifndef HPCG_NO_MPI
 void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x);
+
 #endif  // HPCG_NO_MPI
 #endif  // HPCG_WITH_MORPHEUS
-
-#endif  // HPCG_MORPHEUSUTILS_HPP
+#endif  // HPCG_MORPHEUS_EXCHANGE_HALO_HPP

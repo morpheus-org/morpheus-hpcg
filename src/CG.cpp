@@ -65,8 +65,8 @@
 #include "mytimer.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#include "morpheus/SparseMatrix.hpp"
-#include "morpheus/Vector.hpp"
+#include "morpheus/Morpheus_SparseMatrix.hpp"
+#include "morpheus/Morpheus_Vector.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 // Use TICK and TOCK to time a code section in MATLAB-like fashion
