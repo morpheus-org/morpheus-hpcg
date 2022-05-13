@@ -55,20 +55,22 @@ option(HPCG_ENABLE_LONG_LONG
 option(HPCG_ENABLE_OPENMP "Enable OpenMP support" OFF)
 # Build with Morpheus
 option(HPCG_ENABLE_MORPHEUS "Enable Morpheus library" OFF)
-option(HPCG_ENABLE_MORPHEUS_DYNAMIC
-       "Enable Morpheus library with dynamic matrix support" OFF)
-option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
-option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
-option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
-option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
-option(
-  HPCG_ENABLE_MULTI_FORMATS
-  "Enabling multiple formats across processes and MG levels using the input file."
-  OFF)
-option(
-  HPCG_ENABLE_SPLIT_DISTRIBUTED
-  "Enabling split between on-process and ghost elements of the local matrix."
-  OFF)
+if(HPCG_ENABLE_MORPHEUS)
+  option(HPCG_ENABLE_MORPHEUS_DYNAMIC
+         "Enable Morpheus library with dynamic matrix support" OFF)
+  option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
+  option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
+  option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
+  option(HPCG_ENABLE_MG "Enable MG Preconditioner." OFF)
+  option(
+    HPCG_ENABLE_MULTI_FORMATS
+    "Enabling multiple formats across processes and MG levels using the input file."
+    OFF)
+  option(
+    HPCG_ENABLE_SPLIT_DISTRIBUTED
+    "Enabling split between on-process and ghost elements of the local matrix."
+    OFF)
+endif()
 
 set(HPCG_SOURCES)
 append_glob(HPCG_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
