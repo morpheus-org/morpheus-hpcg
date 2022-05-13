@@ -154,7 +154,7 @@ void GenerateCoarseProblem(const SparseMatrix &Af) {
   Af.Ac          = Ac;
   MGData *mgData = new MGData;
   InitializeMGData(f2cOperator, rc, xc, Axf, *mgData);
-#ifdef HPCG_WITH_MG
+#ifdef HPCG_WITH_MORPHEUS
   mgData->f2cOperator_localLength = Af.localNumberOfRows;
 #endif
   Af.mgData = mgData;

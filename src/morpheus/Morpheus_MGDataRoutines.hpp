@@ -25,13 +25,11 @@
 #define HPCG_MORPHEUS_MGDATA_ROUTINES_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
 
 #include "MGData.hpp"
 
 void MorpheusInitializeMGData(MGData& mg);
 void MorpheusOptimizeMGData(MGData& mg);
 
-#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_MGDATA_ROUTINES_HPP

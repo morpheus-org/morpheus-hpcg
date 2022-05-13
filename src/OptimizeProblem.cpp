@@ -99,7 +99,6 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   int levels = 1;
   int nprocs = A.geom->size, rank = A.geom->rank;
 
-#ifdef HPCG_WITH_MG
   // Process all coarse level matrices
   SparseMatrix* M = A.Ac;
   while (M != 0) {
@@ -119,7 +118,6 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     MorpheusOptimizeMGData(*mg);
     mg = M->mgData;
   }
-#endif  // HPCG_WITH_MG
 
 #ifdef HPCG_WITH_MULTI_FORMATS
   if (rank == 0) {
@@ -179,15 +177,14 @@ double OptimizeProblemMemoryUse(const SparseMatrix& A) {
   //     typename Morpheus::Dia::HostMirror Adia = Ahost;
   //     fnbytes +=
   //         Adia.ndiags() * ((double)sizeof(index_type));  // diagonal_offsets
-  //     fnbytes +=
-  //         (Adia.nrows() * Adia.ncols()) * ((double)sizeof(value_type));  //
-  //         values
+  //     fnbytes += (Adia.nrows() * Adia.ncols()) *
+  //     ((double)sizeof(value_type));  // values
   //   } else {
   //     throw Morpheus::RuntimeException("Selected invalid format.");
   //   }
   // #else
-  //   fnbytes += (Ahost.nrows() + 1) * ((double)sizeof(index_type));  //
-  //   row_offsets fnbytes += Ahost.nnnz() * ((double)sizeof(index_type));  //
+  //   fnbytes += (Ahost.nrows() + 1) * ((double)sizeof(index_type)); //
+  //   row_offsets fnbytes += Ahost.nnnz() * ((double)sizeof(index_type)); //
   //   column_indices fnbytes += Ahost.nnnz() * ((double)sizeof(value_type)); //
   //   values
   // #endif  // HPCG_WITH_MORPHEUS_DYNAMIC

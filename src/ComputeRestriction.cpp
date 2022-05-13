@@ -48,8 +48,9 @@
 
 #include "ComputeRestriction.hpp"
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
+#if defined(HPCG_WITH_MORPHEUS)
 #include "morpheus/Morpheus.hpp"
+#include "morpheus/Morpheus_MGData.hpp"
 
 #ifdef HPCG_WITH_KOKKOS_CUDA
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
@@ -99,7 +100,7 @@ void Restriction_Impl(const Morpheus::Vector<ValueType>& Axf,
 #endif  // HPCG_ENABLE_KOKKOS_CUDA
 #else
 #include "ComputeRestriction_ref.hpp"
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WTIH_MG
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
   Routine to compute the coarse residual vector.
@@ -116,7 +117,7 @@ void Restriction_Impl(const Morpheus::Vector<ValueType>& Axf,
   @return Returns zero on success and a non-zero value otherwise.
 */
 int ComputeRestriction(const SparseMatrix& A, const Vector& rf) {
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
+#if defined(HPCG_WITH_MORPHEUS)
   using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
   using MGData_t = HPCG_Morpheus_MGData;
 
@@ -129,6 +130,6 @@ int ComputeRestriction(const SparseMatrix& A, const Vector& rf) {
                    rcopt->values.dev);
 #else
   ComputeRestriction_ref(A, rf);
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
   return 0;
 }

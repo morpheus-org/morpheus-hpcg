@@ -59,31 +59,18 @@
 #include "morpheus/Morpheus_Vector.hpp"
 #include "morpheus/Morpheus_VectorRoutines.hpp"
 
-#if defined(HPCG_WITH_MG)
 #include "ComputeProlongation.hpp"
 #include "ComputeRestriction.hpp"
 #include "ComputeSPMV.hpp"
 #include "ComputeSYMGS.hpp"
-#endif  // HPCG_WITH_MG
 
 #include "mytimer.hpp"
+#else
+#include "ComputeMG_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
-#ifndef HPCG_WITH_MG
-#include "ComputeMG_ref.hpp"
-#endif
-/*!
-  @param[in] A the known system matrix
-  @param[in] r the input vector
-  @param[inout] x On exit contains the result of the multigrid V-cycle with r as
-  the RHS, x is the approximation to Ax = r.
-
-  @return returns 0 upon success and non-zero otherwise
-
-  @see ComputeMG
-*/
-int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
+#if defined(HPCG_WITH_MORPHEUS)
+int MorpheusMG(const SparseMatrix& A, const Vector& r, Vector& x) {
   double t_begin = morpheus_timer(), t0 = 0.0, t1 = 0.0, t2 = 0.0;
 
   A.isMgOptimized = true;
@@ -169,8 +156,24 @@ int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
 #endif  // HPCG_WITH_MULTI_FORMATS
 
   return 0;
+}
+#endif
+/*!
+  @param[in] A the known system matrix
+  @param[in] r the input vector
+  @param[inout] x On exit contains the result of the multigrid V-cycle with r as
+  the RHS, x is the approximation to Ax = r.
+
+  @return returns 0 upon success and non-zero otherwise
+
+  @see ComputeMG
+*/
+int ComputeMG(const SparseMatrix& A, const Vector& r, Vector& x) {
+#if defined(HPCG_WITH_MORPHEUS)
+  return MorpheusMG(A, r, x);
 #else
+  // reference implementation
   A.isMgOptimized = false;
   return ComputeMG_ref(A, r, x);
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG
+#endif
 }

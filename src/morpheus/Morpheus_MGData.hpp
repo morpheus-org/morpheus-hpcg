@@ -25,7 +25,6 @@
 #define HPCG_MORPHEUS_MGDATA_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
 
 #include "morpheus/Morpheus_Vector.hpp"
 
@@ -36,6 +35,5 @@ struct HPCG_Morpheus_MGData_STRUCT {
 
 typedef HPCG_Morpheus_MGData_STRUCT HPCG_Morpheus_MGData;
 
-#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_MGDATA_HPP

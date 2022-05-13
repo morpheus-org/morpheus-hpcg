@@ -24,7 +24,6 @@
 #include "morpheus/Morpheus_MGDataRoutines.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
 
 #include "morpheus/Morpheus_MGData.hpp"
 #include "morpheus/Morpheus_VectorRoutines.hpp"
@@ -54,5 +53,4 @@ void MorpheusOptimizeMGData(MGData& mg) {
   Morpheus::copy(MGopt->f2c.host, MGopt->f2c.dev);
 }
 
-#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS

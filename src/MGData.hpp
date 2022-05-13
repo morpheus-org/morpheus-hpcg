@@ -59,9 +59,7 @@
 #include "Vector.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
-#ifdef HPCG_WITH_MG
 #include "morpheus/Morpheus_MGData.hpp"
-#endif  // HPCG_WITH_MG
 #endif  // HPCG_WITH_MORPHEUS
 
 struct MGData_STRUCT {
@@ -79,9 +77,9 @@ struct MGData_STRUCT {
    used inside optimized ComputeSPMV().
    */
   void* optimizationData;
-#ifdef HPCG_WITH_MG
+#ifdef HPCG_WITH_MORPHEUS
   local_int_t f2cOperator_localLength;
-#endif  // HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
 };
 typedef struct MGData_STRUCT MGData;
 
@@ -119,13 +117,13 @@ inline void DeleteMGData(MGData& data) {
   delete data.rc;
   delete data.xc;
 
-#ifdef HPCG_WITH_MG
+#ifdef HPCG_WITH_MORPHEUS
   if (data.optimizationData) {
     using MGData_t = HPCG_Morpheus_MGData;
     delete (MGData_t*)data.optimizationData;
     data.optimizationData = nullptr;
   }
-#endif  // HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
   return;
 }
 

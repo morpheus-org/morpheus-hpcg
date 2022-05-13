@@ -48,8 +48,9 @@
 
 #include "ComputeProlongation.hpp"
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
+#if defined(HPCG_WITH_MORPHEUS)
 #include "morpheus/Morpheus.hpp"
+#include "morpheus/Morpheus_MGData.hpp"
 
 #ifdef HPCG_WITH_KOKKOS_CUDA
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
@@ -95,7 +96,7 @@ void Prolongation_Impl(const IndexType nc,
 #endif  // HPCG_WITH_KOKKOS_CUDA
 #else
 #include "ComputeProlongation_ref.hpp"
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
 
 /*!
   Routine to compute the coarse residual vector.
@@ -112,7 +113,7 @@ void Prolongation_Impl(const IndexType nc,
   @return Returns zero on success and a non-zero value otherwise.
 */
 int ComputeProlongation(const SparseMatrix& Af, Vector& xf) {
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MG)
+#if defined(HPCG_WITH_MORPHEUS)
   using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
   using MGData_t = HPCG_Morpheus_MGData;
 
@@ -125,6 +126,6 @@ int ComputeProlongation(const SparseMatrix& Af, Vector& xf) {
                     xfopt->values.dev);
 #else
   ComputeProlongation_ref(Af, xf);
-#endif  // HPCG_WITH_MORPHEUS && HPCG_WITH_MG
+#endif  // HPCG_WITH_MORPHEUS
   return 0;
 }

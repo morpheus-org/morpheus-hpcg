@@ -302,6 +302,7 @@ int main(int argc, char* argv[]) {
   OptimizeProblem(A, data, b, x, xexact);
   t7       = mytimer() - t7;
   times[7] = t7;
+
 #ifdef HPCG_DEBUG
   if (rank == 0)
     HPCG_fout << "Total problem setup time in main (sec) = " << mytimer() - t1
@@ -321,6 +322,7 @@ int main(int argc, char* argv[]) {
   TestCGData testcg_data;
   testcg_data.count_pass = testcg_data.count_fail = 0;
   TestCG(A, data, b, x, testcg_data);
+
   TestSymmetryData testsymmetry_data;
   TestSymmetry(A, b, xexact, testsymmetry_data);
 #ifdef HPCG_DEBUG

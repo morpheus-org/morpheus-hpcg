@@ -54,7 +54,10 @@ static int SkipUntilEol(FILE *stream) {
 int ReadMorpheusDat() {
   FILE *morpheusStream = fopen("Morpheus.dat", "r");
 
-  if (!morpheusStream) return -1;
+  if (!morpheusStream) {
+    std::cout << "Morpheus.dat not found!" << std::endl;
+    return -1;
+  }
 
   int procid, lvlid, fmtid;
   int ctr = 0;
