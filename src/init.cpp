@@ -67,10 +67,15 @@ const char *NULLDEVICE = "/dev/null";
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include "hpcg.hpp"
 
 #include "ReadHpcgDat.hpp"
+
+#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
+#include "morpheus/Morpheus_ReadHpcgDat.hpp"
+#endif
 
 std::ofstream
     HPCG_fout;  //!< output file stream for logging activities during HPCG run
@@ -210,6 +215,22 @@ int HPCG_Init(int *argc_p, char ***argv_p, HPCG_Params &params) {
   }
 
   free(iparams);
+
+#if defined(HPCG_WITH_MULTI_FORMATS)
+  std::string formats_filename, formats_tag("--hpcg-formats=");
+  for (i = 1; i <= argc && argv[i]; ++i) {
+    if (startswith(argv[i], formats_tag.c_str())) {
+      formats_filename = std::string(argv[i]);
+      formats_filename.erase(formats_filename.find(formats_tag),
+                             formats_tag.length());
+      if (params.comm_rank == 0) {
+        std::cout << "Reading HPCG formats file from: " << formats_filename
+                  << std::endl;
+      }
+      ReadMorpheusDat(formats_filename);
+    }
+  }
+#endif
 
   return 0;
 }

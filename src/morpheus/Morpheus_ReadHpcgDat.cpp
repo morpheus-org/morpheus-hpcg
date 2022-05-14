@@ -51,13 +51,10 @@ static int SkipUntilEol(FILE *stream) {
   return chOrEof;
 }
 
-int ReadMorpheusDat() {
-  FILE *morpheusStream = fopen("Morpheus.dat", "r");
+int ReadMorpheusDat(std::string filename) {
+  FILE *morpheusStream = fopen(filename.c_str(), "r");
 
-  if (!morpheusStream) {
-    std::cout << "Morpheus.dat not found!" << std::endl;
-    return -1;
-  }
+  if (!morpheusStream) return -1;
 
   int procid, lvlid, fmtid;
   int ctr = 0;
@@ -76,7 +73,7 @@ int ReadMorpheusDat() {
     ctr++;
   } while (SkipUntilEol(morpheusStream) != EOF);
 
-  fmt_tuple.nentries = ctr;
+  fmt_tuple.nentries += ctr;
 
   fclose(morpheusStream);
 

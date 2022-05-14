@@ -34,20 +34,18 @@
 int GetFormat(SparseMatrix &A) {
   int fmt_index = args.dynamic_format;
 
-  // #ifdef HPCG_WITH_MULTI_FORMATS
-  //   if (fmt_tuple.nentries == 0) {
-  //     return fmt_index;
-  //   }
+#ifdef HPCG_WITH_MULTI_FORMATS
+  if (fmt_tuple.nentries == 0) return fmt_index;
 
-  //   // select format based on the rank and coarse level
-  //   for (int i = 0; i < fmt_tuple.nentries; i++) {
-  //     if (MorpheusSparseMatrixGetRank(A) == fmt_tuple.procid[i] &&
-  //         MorpheusSparseMatrixGetCoarseLevel(A) == fmt_tuple.lvlid[i]) {
-  //       fmt_index = fmt_tuple.fmtid[i];
-  //       break;
-  //     }
-  //   }
-  // #endif  // HPCG_WITH_MULTI_FORMATS
+  // select format based on the rank and coarse level
+  for (int i = 0; i < fmt_tuple.nentries; i++) {
+    if (MorpheusSparseMatrixGetRank(A) == fmt_tuple.procid[i] &&
+        MorpheusSparseMatrixGetCoarseLevel(A) == fmt_tuple.lvlid[i]) {
+      fmt_index = fmt_tuple.fmtid[i];
+      break;
+    }
+  }
+#endif  // HPCG_WITH_MULTI_FORMATS
 
   return fmt_index;
 }

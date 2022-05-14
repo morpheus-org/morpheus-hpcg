@@ -24,6 +24,8 @@
 #ifndef HPCG_MORPHEUS_READHPCGDAT_HPP
 #define HPCG_MORPHEUS_READHPCGDAT_HPP
 
-int ReadMorpheusDat();
+#include <string>
+
+int ReadMorpheusDat(std::string filename);
 
 #endif  // HPCG_MORPHEUS_READHPCGDAT_HPP

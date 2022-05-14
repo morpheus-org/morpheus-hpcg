@@ -50,10 +50,6 @@
 #include <iostream>
 #include "ReadHpcgDat.hpp"
 
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
-#include "morpheus/Morpheus_ReadHpcgDat.hpp"
-#endif
-
 static int SkipUntilEol(FILE *stream) {
   int chOrEof;
   bool finished;
@@ -77,10 +73,6 @@ static int SkipUntilEol(FILE *stream) {
 
 int ReadHpcgDat(int *localDimensions, int *secondsPerRun,
                 int *localProcDimensions) {
-#if defined(HPCG_WITH_MORPHEUS) && defined(HPCG_WITH_MULTI_FORMATS)
-  ReadMorpheusDat();
-#endif
-
   FILE *hpcgStream = fopen("hpcg.dat", "r");
 
   if (!hpcgStream) return -1;
