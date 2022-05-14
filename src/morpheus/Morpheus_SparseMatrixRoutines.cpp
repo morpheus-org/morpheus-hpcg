@@ -154,4 +154,55 @@ int MorpheusSparseMatrixGetRank(const SparseMatrix& A) {
   return Aopt->rank;
 }
 
+#ifdef HPCG_WITH_MULTI_FORMATS
+format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+
+  format_report entry;
+
+  entry.id.rank     = MorpheusSparseMatrixGetRank(A);
+  entry.id.mg_level = MorpheusSparseMatrixGetCoarseLevel(A);
+  entry.id.format   = Aopt->values.dev.active_index();
+
+  entry.nrows = Aopt->values.dev.nrows();
+  entry.ncols = Aopt->values.dev.ncols();
+  entry.nnnz  = Aopt->values.dev.nnnz();
+
+  entry.memory = 0;
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+  if (Aopt->values.dev.active_enum() == Morpheus::COO_FORMAT) {
+    entry.memory +=
+        2 * Aopt->values.dev.nnnz() *
+        ((double)sizeof(Morpheus::index_type));  // row_indices & column_indices
+    entry.memory += Aopt->values.dev.nnnz() *
+                    ((double)sizeof(Morpheus::value_type));  // values
+  } else if (Aopt->values.dev.active_enum() == Morpheus::CSR_FORMAT) {
+    entry.memory += (Aopt->values.dev.nrows() + 1) *
+                    ((double)sizeof(Morpheus::index_type));  // row_offsets
+    entry.memory += Aopt->values.dev.nnnz() *
+                    ((double)sizeof(Morpheus::index_type));  // column_indices
+    entry.memory += Aopt->values.dev.nnnz() *
+                    ((double)sizeof(Morpheus::value_type));  // values
+    // values
+  } else if (Aopt->values.dev.active_enum() == Morpheus::DIA_FORMAT) {
+    typename Morpheus::Dia Adia = Aopt->values.dev;
+    entry.memory += Adia.ndiags() *
+                    ((double)sizeof(Morpheus::index_type));  // diagonal_offsets
+    entry.memory += (Adia.nrows() * Adia.ncols()) *
+                    ((double)sizeof(Morpheus::value_type));  // values
+  } else {
+    throw Morpheus::RuntimeException("Selected invalid format.");
+  }
+#else
+  entry.memory += (Aopt->values.dev.nrows() + 1) *
+                  ((double)sizeof(Morpheus::index_type));  // row_offsets
+  entry.memory += Aopt->values.dev.nnnz() *
+                  ((double)sizeof(Morpheus::index_type));  // column_indices
+  entry.memory += Aopt->values.dev.nnnz() *
+                  ((double)sizeof(Morpheus::value_type));  // values
+#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
+
+  return entry;
+}
+#endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS

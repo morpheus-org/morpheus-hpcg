@@ -63,17 +63,7 @@
 #if defined(HPCG_WITH_MULTI_FORMATS)
 int ntimers = 5;  // SPMV,SYMGS,MG,Halo-swap,CG
 std::vector<double> mtimers, sub_mtimers;
-
-struct report {
-  int rank;
-  int mg_level;
-  int format;
-  int nrows;
-  int ncols;
-  int nnnz;
-  double memory;
-};
-std::vector<struct report> format_report;
+std::vector<format_report> morpheus_report, sub_report;
 #endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_WITH_MORPHEUS
@@ -107,6 +97,10 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   MorpheusSparseMatrixSetRank(A);
   MorpheusOptimizeSparseMatrix(A);
 
+#ifdef HPCG_WITH_MULTI_FORMATS
+  sub_report.push_back(MorpheusSparseMatrixGetProperties(A));
+#endif
+
   int levels = 1;
   int nprocs = A.geom->size, rank = A.geom->rank;
 
@@ -117,6 +111,9 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     MorpheusSparseMatrixSetCoarseLevel(*M, levels++);
     MorpheusSparseMatrixSetRank(*M);
     MorpheusOptimizeSparseMatrix(*M);
+#ifdef HPCG_WITH_MULTI_FORMATS
+    sub_report.push_back(MorpheusSparseMatrixGetProperties(*M));
+#endif
     // Go to next level in hierarchy
     M = M->Ac;
   }
@@ -133,8 +130,10 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 #ifdef HPCG_WITH_MULTI_FORMATS
   if (rank == 0) {
     mtimers.resize(nprocs * levels * ntimers, 0);
+    morpheus_report.resize(nprocs * levels);
   } else {
     mtimers.resize(0, 0);
+    morpheus_report.resize(0);
   }
   // Local timers
   sub_mtimers.resize(levels * ntimers, 0);

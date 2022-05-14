@@ -28,7 +28,7 @@
 
 #include "morpheus/Morpheus.hpp"
 
-struct formats_struct fmt_tuple;
+std::vector<format_id> input_file;
 
 static int SkipUntilEol(FILE *stream) {
   int chOrEof;
@@ -56,24 +56,17 @@ int ReadMorpheusDat(std::string filename) {
 
   if (!morpheusStream) return -1;
 
-  int procid, lvlid, fmtid;
-  int ctr = 0;
+  format_id entry;
   do {
     // TODO: No fancy checks here yet.
-    if (fscanf(morpheusStream, "%d", &procid) != 1) {
+    if (fscanf(morpheusStream, "%d", &entry.rank) != 1) {
       break;
     }
-    fscanf(morpheusStream, "%d", &lvlid);
-    fscanf(morpheusStream, "%d", &fmtid);
+    fscanf(morpheusStream, "%d", &entry.mg_level);
+    fscanf(morpheusStream, "%d", &entry.format);
 
-    fmt_tuple.procid.push_back(procid);
-    fmt_tuple.lvlid.push_back(lvlid);
-    fmt_tuple.fmtid.push_back(fmtid);
-
-    ctr++;
+    input_file.push_back(entry);
   } while (SkipUntilEol(morpheusStream) != EOF);
-
-  fmt_tuple.nentries += ctr;
 
   fclose(morpheusStream);
 

@@ -35,13 +35,13 @@ int GetFormat(SparseMatrix &A) {
   int fmt_index = args.dynamic_format;
 
 #ifdef HPCG_WITH_MULTI_FORMATS
-  if (fmt_tuple.nentries == 0) return fmt_index;
+  if (input_file.size() == 0) return fmt_index;
 
   // select format based on the rank and coarse level
-  for (int i = 0; i < fmt_tuple.nentries; i++) {
-    if (MorpheusSparseMatrixGetRank(A) == fmt_tuple.procid[i] &&
-        MorpheusSparseMatrixGetCoarseLevel(A) == fmt_tuple.lvlid[i]) {
-      fmt_index = fmt_tuple.fmtid[i];
+  for (int i = 0; i < input_file.size(); i++) {
+    if (MorpheusSparseMatrixGetRank(A) == input_file[i].rank &&
+        MorpheusSparseMatrixGetCoarseLevel(A) == input_file[i].mg_level) {
+      fmt_index = input_file[i].format;
       break;
     }
   }

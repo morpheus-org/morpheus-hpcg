@@ -56,16 +56,22 @@ extern Morpheus::InitArguments args;
 #ifdef HPCG_WITH_MULTI_FORMATS
 #include <vector>
 
-struct formats_struct {
-  std::vector<int> procid;
-  std::vector<int> lvlid;
-  std::vector<int> fmtid;
-  int nentries;
+typedef struct format_id {
+  global_int_t rank;
+  int mg_level;
+  int format;
+} format_id;
 
-  formats_struct() : procid(), lvlid(), fmtid(), nentries(0) {}
-};
+typedef struct format_report {
+  format_id id;
+  local_int_t nrows;
+  local_int_t ncols;
+  global_int_t nnnz;
+  double memory;
+} format_report;
 
-extern struct formats_struct fmt_tuple;
+extern std::vector<format_id> input_file;
+extern std::vector<format_report> morpheus_report, sub_report;
 #endif
 
 #endif  // HPCG_WITH_MORPHEUS

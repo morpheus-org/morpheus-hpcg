@@ -25,6 +25,7 @@
 #define HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP
 
 #ifdef HPCG_WITH_MORPHEUS
+#include "morpheus/Morpheus.hpp"
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
 
@@ -37,5 +38,8 @@ void MorpheusSparseMatrixSetRank(SparseMatrix& A);
 int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
 int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
 
+#ifdef HPCG_WITH_MULTI_FORMATS
+format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A);
+#endif
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP

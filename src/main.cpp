@@ -473,6 +473,7 @@ int main(int argc, char* argv[]) {
 #if defined(HPCG_WITH_MORPHEUS)
 #if defined(HPCG_WITH_MULTI_FORMATS)
   ReportTimingResults();
+  ReportResults();
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS
 
