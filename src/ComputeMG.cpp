@@ -58,6 +58,7 @@
 #include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #include "morpheus/Morpheus_Vector.hpp"
 #include "morpheus/Morpheus_VectorRoutines.hpp"
+#include "morpheus/Morpheus_Timer.hpp"
 
 #include "ComputeProlongation.hpp"
 #include "ComputeRestriction.hpp"

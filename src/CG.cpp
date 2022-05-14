@@ -67,6 +67,7 @@
 #ifdef HPCG_WITH_MORPHEUS
 #include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
 #include "morpheus/Morpheus_Vector.hpp"
+#include "morpheus/Morpheus_Timer.hpp"
 #endif  // HPCG_WITH_MORPHEUS
 
 // Use TICK and TOCK to time a code section in MATLAB-like fashion

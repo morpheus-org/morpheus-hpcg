@@ -63,6 +63,17 @@
 #if defined(HPCG_WITH_MULTI_FORMATS)
 int ntimers = 5;  // SPMV,SYMGS,MG,Halo-swap,CG
 std::vector<double> mtimers, sub_mtimers;
+
+struct report {
+  int rank;
+  int mg_level;
+  int format;
+  int nrows;
+  int ncols;
+  int nnnz;
+  double memory;
+};
+std::vector<struct report> format_report;
 #endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_WITH_MORPHEUS

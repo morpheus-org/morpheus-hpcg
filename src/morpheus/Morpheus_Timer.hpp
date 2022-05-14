@@ -1,5 +1,5 @@
 /**
- * Morpheus_ReportResults.hpp
+ * Morpheus_Timer.hpp
  *
  * EPCC, The University of Edinburgh
  *
@@ -21,10 +21,23 @@
  * limitations under the License.
  */
 
-#ifndef HPCG_MORPHEUS_REPORTRESULTS_HPP
-#define HPCG_MORPHEUS_REPORTRESULTS_HPP
+#ifndef HPCG_MORPHEUS_TIMER_HPP
+#define HPCG_MORPHEUS_TIMER_HPP
 
-void ReportResults();
-void ReportTimingResults();
+#ifdef HPCG_WITH_MORPHEUS
+double morpheus_timer(void);
 
-#endif  // HPCG_MORPHEUS_REPORTRESULTS_HPP
+#ifdef HPCG_WITH_MULTI_FORMATS
+#include <vector>
+extern std::vector<double> mtimers;
+extern std::vector<double> sub_mtimers;
+extern int ntimers;  // Timers per level
+                     // SPMV,SYMGS,MG,Halo-swap,CG
+
+#endif  // HPCG_WITH_MULTI_FORMATS
+
+#define MTICK() t0 = morpheus_timer()  //!< record current time in 't0'
+#define MTOCK(t) t += morpheus_timer() - t0
+
+#endif  // HPCG_WITH_MORPEHUS
+#endif  // HPCG_MORPHEUS_TIMER_HPP
