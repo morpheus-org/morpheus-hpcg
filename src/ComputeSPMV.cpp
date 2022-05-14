@@ -111,11 +111,10 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   t0 = morpheus_timer() - t_begin;
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
-    int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
-    sub_mtimers[offset + 0] += t0;  // SPMV time
+    const int level = MorpheusSparseMatrixGetCoarseLevel(A);
+    sub_mtimers[level].SPMV += t0;
 #ifndef HPCG_NO_MPI
-    sub_mtimers[offset + 3] += t1;  // Halo-Swap time
-
+    sub_mtimers[level].HALO_SWAP += t1;
 #endif  // HPCG_NO_MPI
   }
 #endif  // HPCG_WITH_MULTI_FORMATS

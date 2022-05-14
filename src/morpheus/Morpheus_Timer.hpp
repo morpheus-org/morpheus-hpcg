@@ -29,10 +29,19 @@ double morpheus_timer(void);
 
 #ifdef HPCG_WITH_MULTI_FORMATS
 #include <vector>
-extern std::vector<double> mtimers;
-extern std::vector<double> sub_mtimers;
-extern int ntimers;  // Timers per level
-                     // SPMV,SYMGS,MG,Halo-swap,CG
+
+typedef struct morpheus_timers {
+  double SPMV;
+  double SYMGS;
+  double MG;
+  double HALO_SWAP;
+  double CG;
+
+  morpheus_timers() : SPMV(0), SYMGS(0), MG(0), HALO_SWAP(0), CG(0) {}
+
+} morpheus_timers;
+
+extern std::vector<morpheus_timers> mtimers, sub_mtimers;
 
 #endif  // HPCG_WITH_MULTI_FORMATS
 

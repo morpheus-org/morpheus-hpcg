@@ -40,7 +40,7 @@ MPI_Datatype MPI_GLOBAL_INT = MPI_LONG_LONG;
 #endif  // HPCG_NO_LONG_LONG
 
 // Construct the equivalent MPI types
-MPI_Datatype MPI_FORMAT_ID, MPI_FORMAT_REPORT;
+MPI_Datatype MPI_FORMAT_ID, MPI_FORMAT_REPORT, MPI_MORPHEUS_TIMERS;
 
 void MPI_FORMAT_ID_type_construct() {
   int lengths[3] = {1, 1, 1};
@@ -79,9 +79,7 @@ void MPI_FORMAT_REPORT_type_construct() {
   displacements[3] = MPI_Aint_diff(displacements[3], base_address);
   displacements[4] = MPI_Aint_diff(displacements[4], base_address);
 
-  // if (nullptr == MPI_FORMAT_ID) {
   MPI_FORMAT_ID_type_construct();
-  // }
 
   MPI_Datatype types[5] = {MPI_FORMAT_ID, MPI_INT, MPI_INT, MPI_GLOBAL_INT,
                            MPI_DOUBLE};
@@ -89,17 +87,32 @@ void MPI_FORMAT_REPORT_type_construct() {
   MPI_Type_commit(&MPI_FORMAT_REPORT);
 }
 
-#endif  // HPCG_NO_MPI
+void MPI_MORPHEUS_TIMERS_type_construct() {
+  int lengths[5] = {1, 1, 1, 1, 1};
+  MPI_Aint displacements[5];
+  MPI_Aint base_address;
+  morpheus_timers dummy_timer;
 
-int count_nprocs() {
-  int size = 1;
-#ifndef HPCG_NO_MPI
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-#endif
-  return size;
+  MPI_Get_address(&dummy_timer, &base_address);
+  MPI_Get_address(&dummy_timer.SPMV, &displacements[0]);
+  MPI_Get_address(&dummy_timer.SYMGS, &displacements[1]);
+  MPI_Get_address(&dummy_timer.MG, &displacements[2]);
+  MPI_Get_address(&dummy_timer.HALO_SWAP, &displacements[3]);
+  MPI_Get_address(&dummy_timer.CG, &displacements[4]);
+  displacements[0] = MPI_Aint_diff(displacements[0], base_address);
+  displacements[1] = MPI_Aint_diff(displacements[1], base_address);
+  displacements[2] = MPI_Aint_diff(displacements[2], base_address);
+  displacements[3] = MPI_Aint_diff(displacements[3], base_address);
+  displacements[4] = MPI_Aint_diff(displacements[4], base_address);
+
+  MPI_Datatype types[5] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+                           MPI_DOUBLE};
+  MPI_Type_create_struct(5, lengths, displacements, types,
+                         &MPI_MORPHEUS_TIMERS);
+  MPI_Type_commit(&MPI_MORPHEUS_TIMERS);
 }
 
-int count_nlevels() { return input_file.size() / count_nprocs(); }
+#endif  // HPCG_NO_MPI
 
 void ReportTimingResults() {
   std::string eol = "\n", del = "\t";
@@ -107,36 +120,57 @@ void ReportTimingResults() {
   std::vector<std::string> timers(
       {"SPMV ", "SYMGS", "MG   ", "Halo ", "CG   "});
 
-  int id;
-  int nprocs  = count_nprocs();
-  int nlevels = count_nlevels();
-  int rank    = 0;
-
+  int rank = 0;
 #ifndef HPCG_NO_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Gather(sub_mtimers.data(), sub_mtimers.size(), MPI_DOUBLE, mtimers.data(),
-             sub_mtimers.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_MORPHEUS_TIMERS_type_construct();
 
+  MPI_Gather(sub_mtimers.data(), sub_mtimers.size(), MPI_MORPHEUS_TIMERS,
+             mtimers.data(), sub_mtimers.size(), MPI_MORPHEUS_TIMERS, 0,
+             MPI_COMM_WORLD);
 #else
   mtimers.assign(sub_mtimers.begin(), sub_mtimers.end())
 #endif
 
   if (rank == 0) {
 #ifdef HPCG_WITH_MG
-    auto mg_levels = nlevels;
+    size_t report_mg_levels = sub_mtimers.size();
 #else
-    auto mg_levels = 1;
+    size_t report_mg_levels = 1;
 #endif
-    for (auto pid = 0; pid < nprocs; pid++) {
-      for (auto lid = 0; lid < mg_levels; lid++) {
-        for (auto tid = 0; tid < ntimers; tid++) {
-          id = pid * nlevels * ntimers + lid * ntimers + tid;
-          std::stringstream val;
-          val << std::setprecision(14) << mtimers[id];
-          result += std::to_string(pid) + del + std::to_string(lid) + del +
-                    timers[tid] + del + val.str() + eol;
-        }
-      }
+    std::cout << "MG Levels = " << report_mg_levels << std::endl;
+
+    std::stringstream header;
+    header << std::setw(10) << "Process" << del;
+    header << std::setw(10) << "MG_Level" << del;
+    header << std::setw(20) << "SPMV(s)" << del;
+    header << std::setw(20) << "SYMGS(s)" << del;
+    header << std::setw(20) << "MG(s)" << del;
+    header << std::setw(20) << "Halo_Swap(s)" << del;
+    header << std::setw(20) << "CG(s)" << del;
+    result += header.str() + eol;
+
+    for (size_t i = 0; i < mtimers.size(); i++) {
+      size_t current_proc  = i / sub_mtimers.size();
+      size_t current_level = i % sub_mtimers.size();
+
+      if (current_level >= report_mg_levels) continue;
+
+      std::stringstream val;
+      val << std::setw(10) << current_proc << del;
+      val << std::setw(10) << current_level << del;
+      val << std::setw(20) << std::fixed << std::setprecision(14)
+          << mtimers[i].SPMV << del;
+      val << std::setw(20) << std::fixed << std::setprecision(14)
+          << mtimers[i].SYMGS << del;
+      val << std::setw(20) << std::fixed << std::setprecision(14)
+          << mtimers[i].MG << del;
+      val << std::setw(20) << std::fixed << std::setprecision(14)
+          << mtimers[i].HALO_SWAP << del;
+      val << std::setw(20) << std::fixed << std::setprecision(14)
+          << mtimers[i].CG;
+
+      result += val.str() + eol;
     }
 
     std::ofstream out("morpheus-timings-output.txt");
@@ -156,7 +190,6 @@ void ReportResults() {
   MPI_Gather(sub_report.data(), sub_report.size(), MPI_FORMAT_REPORT,
              morpheus_report.data(), sub_report.size(), MPI_FORMAT_REPORT, 0,
              MPI_COMM_WORLD);
-
 #else
   morpheus_report.assign(sub_report.begin(), sub_report.end())
 #endif
@@ -164,14 +197,14 @@ void ReportResults() {
   if (rank == 0) {
     std::stringstream header;
     header << std::setw(10) << "Process" << del;
-    header << std::setw(10) << "MG Level" << del;
+    header << std::setw(10) << "MG_Level" << del;
     header << std::setw(10) << "Format" << del;
     header << std::setw(10) << "NRows" << del;
     header << std::setw(10) << "Ncols" << del;
     header << std::setw(10) << "Nnnz" << del;
     header << std::setw(10) << "Memory(Bytes)" << del;
     result += header.str() + eol;
-    for (auto i = 0; i < morpheus_report.size(); i++) {
+    for (size_t i = 0; i < morpheus_report.size(); i++) {
       std::stringstream val;
       val << std::setw(10) << morpheus_report[i].id.rank << del;
       val << std::setw(10) << morpheus_report[i].id.mg_level << del;

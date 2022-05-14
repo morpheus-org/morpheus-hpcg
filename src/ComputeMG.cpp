@@ -149,10 +149,10 @@ int MorpheusMG(const SparseMatrix& A, const Vector& r, Vector& x) {
   t0 = morpheus_timer() - t_begin;
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
-    int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
-    sub_mtimers[offset + 2] += t0;  // MG time
-    sub_mtimers[offset + 0] += t1;  // SPMV time
-    sub_mtimers[offset + 1] += t2;  // SYMGS time
+    const int level = MorpheusSparseMatrixGetCoarseLevel(A);
+    sub_mtimers[level].MG += t0;
+    sub_mtimers[level].SPMV += t1;
+    sub_mtimers[level].SYMGS += t2;
   }
 #endif  // HPCG_WITH_MULTI_FORMATS
 

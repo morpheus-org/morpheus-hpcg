@@ -228,8 +228,8 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
 #if defined(HPCG_WITH_MORPHEUS)
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
-    int offset = MorpheusSparseMatrixGetCoarseLevel(A) * ntimers;
-    sub_mtimers[offset + 4] += total_time;  // CG time
+    const int level = MorpheusSparseMatrixGetCoarseLevel(A);
+    sub_mtimers[level].CG += total_time;
   }
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS

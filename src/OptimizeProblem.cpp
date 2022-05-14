@@ -59,10 +59,10 @@
 #include "morpheus/Morpheus_VectorRoutines.hpp"
 #include "morpheus/Morpheus_MGDataRoutines.hpp"
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_Timer.hpp"
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
-int ntimers = 5;  // SPMV,SYMGS,MG,Halo-swap,CG
-std::vector<double> mtimers, sub_mtimers;
+std::vector<morpheus_timers> mtimers, sub_mtimers;
 std::vector<format_report> morpheus_report, sub_report;
 #endif  // HPCG_WITH_MULTI_FORMATS
 
@@ -129,14 +129,14 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 
 #ifdef HPCG_WITH_MULTI_FORMATS
   if (rank == 0) {
-    mtimers.resize(nprocs * levels * ntimers, 0);
+    mtimers.resize(nprocs * levels);
     morpheus_report.resize(nprocs * levels);
   } else {
-    mtimers.resize(0, 0);
+    mtimers.resize(0);
     morpheus_report.resize(0);
   }
   // Local timers
-  sub_mtimers.resize(levels * ntimers, 0);
+  sub_mtimers.resize(levels);
 #endif  // HPCG_WITH_MULTI_FORMATS
 
   MorpheusInitializeVector(b);
