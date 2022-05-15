@@ -53,6 +53,7 @@
  */
 
 #include "OptimizeProblem.hpp"
+#include "Geometry.hpp"
 
 #ifdef HPCG_WITH_MORPHEUS
 #include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
@@ -60,6 +61,10 @@
 #include "morpheus/Morpheus_MGDataRoutines.hpp"
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"
 #include "morpheus/Morpheus_Timer.hpp"
+
+#if defined(HPCG_DEBUG)
+#include "morpheus/Morpheus_IO.hpp"
+#endif
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
 std::vector<morpheus_timers> mtimers, sub_mtimers;
@@ -89,6 +94,7 @@ void multicolor(SparseMatrix& A);
   @see GenerateGeometry
   @see GenerateProblem
 */
+
 int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
                     Vector& xexact) {
 #ifdef HPCG_WITH_MORPHEUS
@@ -97,13 +103,16 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   MorpheusSparseMatrixSetRank(A);
   MorpheusOptimizeSparseMatrix(A);
 
+#if defined(HPCG_DEBUG) || defined(HPCG_DETAILED_DEBUG)
+  SparseMatrixWrite(A);
+  MorpheusSparseMatrixWrite(A);
+#endif
+
 #ifdef HPCG_WITH_MULTI_FORMATS
   sub_report.push_back(MorpheusSparseMatrixGetProperties(A));
 #endif
 
   int levels = 1;
-  int nprocs = A.geom->size, rank = A.geom->rank;
-
   // Process all coarse level matrices
   SparseMatrix* M = A.Ac;
   while (M != 0) {
@@ -111,6 +120,13 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     MorpheusSparseMatrixSetCoarseLevel(*M, levels++);
     MorpheusSparseMatrixSetRank(*M);
     MorpheusOptimizeSparseMatrix(*M);
+
+#if defined(HPCG_DEBUG) || defined(HPCG_DETAILED_DEBUG)
+    int clvl = MorpheusSparseMatrixGetCoarseLevel(*M);
+    SparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
+    MorpheusSparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
+#endif
+
 #ifdef HPCG_WITH_MULTI_FORMATS
     sub_report.push_back(MorpheusSparseMatrixGetProperties(*M));
 #endif
@@ -124,11 +140,13 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     M = M->Ac;
     MorpheusInitializeMGData(*mg);
     MorpheusOptimizeMGData(*mg);
+
     mg = M->mgData;
   }
 
 #ifdef HPCG_WITH_MULTI_FORMATS
-  if (rank == 0) {
+  if (A.geom->rank == 0) {
+    int nprocs = A.geom->size;
     mtimers.resize(nprocs * levels);
     morpheus_report.resize(nprocs * levels);
   } else {

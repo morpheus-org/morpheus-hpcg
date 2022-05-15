@@ -95,20 +95,26 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
 
   using Vector_t          = HPCG_Morpheus_Vec<Morpheus::value_type>;
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
-  Vector_t* xopt          = (Vector_t*)x.optimizationData;
-  Vector_t* yopt          = (Vector_t*)y.optimizationData;
 
+  auto xv     = ((Vector_t*)x.optimizationData)->values.dev;
+  auto yv     = ((Vector_t*)y.optimizationData)->values.dev;
+  auto Alocal = Aopt->local.dev;
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->local.dev, xopt->local.dev,
-                                          yopt->local.dev);
-  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->ghost.dev, xopt->ghost.dev,
-                                          yopt->ghost.dev);
+  using uvec  = typename Morpheus::UnmanagedVector<Morpheus::value_type>;
+  auto Aghost = Aopt->ghost.dev;
+
+  // wrap vector to local and ghost part
+  auto xlocal = uvec(Alocal.nrows(), xv.data());
+  auto xghost = uvec(Aghost.ncols(), xv.data() + Aghost.nrows());
+  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, yv);
+  Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, yv, false);
+
 #else
-  Morpheus::multiply<Morpheus::ExecSpace>(Aopt->values.dev, xopt->values.dev,
-                                          yopt->values.dev);
+  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xv, yv);
 #endif
   Kokkos::fence();
   t0 = morpheus_timer() - t_begin;
+
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
     const int level = MorpheusSparseMatrixGetCoarseLevel(A);
