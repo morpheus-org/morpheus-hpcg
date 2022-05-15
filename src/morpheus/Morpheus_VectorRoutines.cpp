@@ -50,23 +50,4 @@ void MorpheusZeroVector(Vector& v) {
   vopt->values.dev.assign(vopt->values.dev.size(), 0);  // Zero out x on device
 }
 
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-void MorpheusSplitVector(Vector& v, local_int_t localNumberOfRows) {
-  using mirror =
-      typename Morpheus::UnmanagedVector<Morpheus::value_type>::HostMirror;
-  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
-  Vector_t* vopt = (Vector_t*)v.optimizationData;
-
-  // Create wrappers around the original vector values - no allocation here
-  auto local_sz = localNumberOfRows;
-  auto ghost_sz = v.localLength - localNumberOfRows;
-  // [0 .. lsz)
-  vopt->local.host = mirror(local_sz, vopt->values.host.data());
-  vopt->local.dev  = mirror(local_sz, vopt->values.dev.data());
-  // [lsz .. v.localLength)
-  vopt->ghost.host = mirror(ghost_sz, vopt->values.host.data() + local_sz);
-  vopt->ghost.dev  = mirror(ghost_sz, vopt->values.dev.data() + local_sz);
-}
-#endif
-
 #endif  // HPCG_WITH_MORPHEUS

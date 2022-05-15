@@ -31,9 +31,5 @@ void MorpheusInitializeVector(Vector& v);
 void MorpheusOptimizeVector(Vector& v);
 void MorpheusZeroVector(Vector& v);
 
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-void MorpheusSplitVector(Vector& v, local_int_t localNumberOfRows);
-#endif
-
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_VECTOR_ROUTINES_HPP

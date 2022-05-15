@@ -47,21 +47,8 @@ template <typename ValueType>
 using Morpheus_Vec = Morpheus_Vec_STRUCT<ValueType>;
 
 template <typename ValueType>
-struct Morpheus_WrapVec_STRUCT {
-  Morpheus::UnmanagedVector<ValueType> dev;
-  typename Morpheus::UnmanagedVector<ValueType>::HostMirror host;
-};
-template <typename ValueType>
-using Morpheus_WrapVec = Morpheus_WrapVec_STRUCT<ValueType>;
-
-template <typename ValueType>
 struct HPCG_Morpheus_Vec_STRUCT {
   Morpheus_Vec<ValueType> values;
-
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-  Morpheus_WrapVec<ValueType> local;
-  Morpheus_WrapVec<ValueType> ghost;
-#endif
 };
 
 template <typename ValueType>
