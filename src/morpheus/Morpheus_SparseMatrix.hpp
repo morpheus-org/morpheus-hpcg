@@ -49,11 +49,9 @@ typedef Morpheus_Mat_STRUCT Morpheus_Mat;
 
 // Optimization data to be used by SparseMatrix
 struct HPCG_Morpheus_Mat_STRUCT {
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
   Morpheus_Mat local;
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
   Morpheus_Mat ghost;
-#else
-  Morpheus_Mat values;  // local + ghost
 #endif
 
   int coarseLevel;

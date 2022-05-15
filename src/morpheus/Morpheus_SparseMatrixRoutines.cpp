@@ -36,36 +36,63 @@ void MorpheusInitializeSparseMatrix(SparseMatrix& A) {
 }
 
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-// TODO:: HpcgToMorpheusMatrix()
-// TODO:: ReplaceMatrixDiagonal() for local & ghost parts
 void HpcgToMorpheusMatrix(SparseMatrix& A) {
-  //   // TODO: What is the localNumberOfNonzeros
-  //   typename Morpheus::Csr::HostMirror Acsr(
-  //       A.localNumberOfRows, A.localNumberOfColumns,
-  //       A.localNumberOfNonzeros);
+  // Count nlocal & nexternal
+  global_int_t nlocal = 0, nexternal = 0;
+  for (local_int_t i = 0; i < A.localNumberOfRows; i++) {
+    for (local_int_t j = 0; j < A.nonzerosInRow[i]; j++) {
+      global_int_t curIndex = A.mtxIndG[i][j];
+      if (A.geom->rank == ComputeRankOfMatrixRow(*(A.geom), curIndex)) {
+        nlocal++;
+      } else {
+        nexternal++;
+      }
+    }
+  }
 
-  //   Acsr.row_offsets(0) = 0;
-  //   global_int_t k      = 0;
+  typename Morpheus::Csr::HostMirror Acsr(A.localNumberOfRows,
+                                          A.localNumberOfRows, nlocal);
+  typename Morpheus::Csr::HostMirror Acsr_ghost(
+      A.localNumberOfRows, A.localNumberOfColumns - A.localNumberOfRows,
+      nexternal);
 
-  //   for (local_int_t i = 0; i < A.localNumberOfRows; i++) {
-  //     for (local_int_t j = 0; j < A.nonzerosInRow[i]; j++) {
-  //       Acsr.column_indices(k) = A.mtxIndL[i][j];
-  //       Acsr.values(k++)       = A.matrixValues[i][j];
-  //     }
+  nlocal    = 0;
+  nexternal = 0;
 
-  //     Acsr.row_offsets(i + 1) = Acsr.row_offsets(i) + A.nonzerosInRow[i];
-  //   }
-  //   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
-  //   Aopt->host              = Acsr;
+  Acsr.row_offsets(0)       = 0;
+  Acsr_ghost.row_offsets(0) = 0;
+  for (local_int_t i = 0; i < A.localNumberOfRows; i++) {
+    for (local_int_t j = 0; j < A.nonzerosInRow[i]; j++) {
+      global_int_t curIndex = A.mtxIndG[i][j];
+      if (A.geom->rank == ComputeRankOfMatrixRow(*(A.geom), curIndex)) {
+        Acsr.column_indices(nlocal) = A.mtxIndL[i][j];
+        Acsr.values(nlocal++)       = A.matrixValues[i][j];
+      } else {
+        Acsr_ghost.column_indices(nexternal) =
+            A.mtxIndL[i][j] - A.localNumberOfRows;
+        Acsr_ghost.values(nexternal++) = A.matrixValues[i][j];
+      }
+    }
+    Acsr.row_offsets(i + 1)       = nlocal;
+    Acsr_ghost.row_offsets(i + 1) = nexternal;
+  }
 
-  // #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
-  //   // In-place conversion w/ temporary allocation
-  //   Morpheus::convert<Kokkos::Serial>(Aopt->values.host, GetFormat(A));
-  // #endif
-  //   // Now send to device
-  //   Aopt->dev =
-  //       Morpheus::create_mirror_container<Morpheus::Space>(Aopt->values.host);
-  //   Morpheus::copy(Aopt->values.host, Aopt->values.dev);
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+  Aopt->local.host        = Acsr;
+  Aopt->ghost.host        = Acsr_ghost;
+
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+  // In-place conversion w/ temporary allocation
+  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetFormat(A));
+  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, 1);  // All to csr for now
+#endif
+  // Now send to device
+  Aopt->local.dev =
+      Morpheus::create_mirror_container<Morpheus::Space>(Aopt->local.host);
+  Morpheus::copy(Aopt->local.host, Aopt->local.dev);
+  Aopt->ghost.dev =
+      Morpheus::create_mirror_container<Morpheus::Space>(Aopt->ghost.host);
+  Morpheus::copy(Aopt->ghost.host, Aopt->ghost.dev);
 }
 #else
 void HpcgToMorpheusMatrix(SparseMatrix& A) {
@@ -80,26 +107,25 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
       Acsr.column_indices(k) = A.mtxIndL[i][j];
       Acsr.values(k++)       = A.matrixValues[i][j];
     }
-
     Acsr.row_offsets(i + 1) = Acsr.row_offsets(i) + A.nonzerosInRow[i];
   }
+
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
-  Aopt->values.host       = Acsr;
+  Aopt->local.host        = Acsr;
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->values.host, GetFormat(A));
+  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetFormat(A));
 #endif
   // Now send to device
-  Aopt->values.dev =
-      Morpheus::create_mirror_container<Morpheus::Space>(Aopt->values.host);
-  Morpheus::copy(Aopt->values.host, Aopt->values.dev);
+  Aopt->local.dev =
+      Morpheus::create_mirror_container<Morpheus::Space>(Aopt->local.host);
+  Morpheus::copy(Aopt->local.host, Aopt->local.dev);
 }
 #endif
 
 void MorpheusOptimizeSparseMatrix(SparseMatrix& A) {
   HpcgToMorpheusMatrix(A);
-
 #ifndef HPCG_NO_MPI
   using index_mirror = typename HPCG_Morpheus_Mat::IndexVector::HostMirror;
   using value_mirror = typename HPCG_Morpheus_Mat::ValueVector::HostMirror;
@@ -131,7 +157,7 @@ void MorpheusReplaceMatrixDiagonal(SparseMatrix& A, Vector& diagonal) {
   auto diag_dev = Morpheus::create_mirror_container<Morpheus::Space>(diag);
 
   Morpheus::copy(diag, diag_dev);
-  Morpheus::update_diagonal<Morpheus::ExecSpace>(Aopt->values.dev, diag_dev);
+  Morpheus::update_diagonal<Morpheus::ExecSpace>(Aopt->local.dev, diag_dev);
 }
 
 void MorpheusSparseMatrixSetCoarseLevel(SparseMatrix& A, int level) {
@@ -155,6 +181,37 @@ int MorpheusSparseMatrixGetRank(const SparseMatrix& A) {
 }
 
 #ifdef HPCG_WITH_MULTI_FORMATS
+template <typename MorpheusMatrix>
+double count_memory(const MorpheusMatrix& A) {
+  double memory     = 0;
+  double index_size = (double)sizeof(Morpheus::index_type);
+  double value_size = (double)sizeof(Morpheus::value_type);
+
+#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
+  if (A.active_enum() == Morpheus::COO_FORMAT) {
+    memory += 2 * A.nnnz() * index_size;  // row_indices & column_indices
+    memory += A.nnnz() * value_size;      // values
+  } else if (A.active_enum() == Morpheus::CSR_FORMAT) {
+    memory += (A.nrows() + 1) * index_size;  // row_offsets
+    memory += A.nnnz() * index_size;         // column_indices
+    memory += A.nnnz() * value_size;         // values
+    // values
+  } else if (A.active_enum() == Morpheus::DIA_FORMAT) {
+    typename Morpheus::Dia Adia = A;
+    memory += Adia.ndiags() * index_size;                  // diagonal_offsets
+    memory += (Adia.nrows() * Adia.ncols()) * value_size;  // values
+  } else {
+    throw Morpheus::RuntimeException("Selected invalid format.");
+  }
+#else
+  memory += (A.nrows() + 1) * index_size;  // row_offsets
+  memory += A.nnnz() * index_size;         // column_indices
+  memory += A.nnnz() * value_size;         // values
+#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
+
+  return memory;
+}
+
 format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
 
@@ -162,45 +219,16 @@ format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A) {
 
   entry.id.rank     = MorpheusSparseMatrixGetRank(A);
   entry.id.mg_level = MorpheusSparseMatrixGetCoarseLevel(A);
-  entry.id.format   = Aopt->values.dev.active_index();
+  entry.id.format   = Aopt->local.dev.active_index();
 
-  entry.nrows = Aopt->values.dev.nrows();
-  entry.ncols = Aopt->values.dev.ncols();
-  entry.nnnz  = Aopt->values.dev.nnnz();
+  entry.nrows = Aopt->local.dev.nrows();
+  entry.ncols = Aopt->local.dev.ncols();
+  entry.nnnz  = Aopt->local.dev.nnnz();
 
-  entry.memory = 0;
-#ifdef HPCG_WITH_MORPHEUS_DYNAMIC
-  if (Aopt->values.dev.active_enum() == Morpheus::COO_FORMAT) {
-    entry.memory +=
-        2 * Aopt->values.dev.nnnz() *
-        ((double)sizeof(Morpheus::index_type));  // row_indices & column_indices
-    entry.memory += Aopt->values.dev.nnnz() *
-                    ((double)sizeof(Morpheus::value_type));  // values
-  } else if (Aopt->values.dev.active_enum() == Morpheus::CSR_FORMAT) {
-    entry.memory += (Aopt->values.dev.nrows() + 1) *
-                    ((double)sizeof(Morpheus::index_type));  // row_offsets
-    entry.memory += Aopt->values.dev.nnnz() *
-                    ((double)sizeof(Morpheus::index_type));  // column_indices
-    entry.memory += Aopt->values.dev.nnnz() *
-                    ((double)sizeof(Morpheus::value_type));  // values
-    // values
-  } else if (Aopt->values.dev.active_enum() == Morpheus::DIA_FORMAT) {
-    typename Morpheus::Dia Adia = Aopt->values.dev;
-    entry.memory += Adia.ndiags() *
-                    ((double)sizeof(Morpheus::index_type));  // diagonal_offsets
-    entry.memory += (Adia.nrows() * Adia.ncols()) *
-                    ((double)sizeof(Morpheus::value_type));  // values
-  } else {
-    throw Morpheus::RuntimeException("Selected invalid format.");
-  }
-#else
-  entry.memory += (Aopt->values.dev.nrows() + 1) *
-                  ((double)sizeof(Morpheus::index_type));  // row_offsets
-  entry.memory += Aopt->values.dev.nnnz() *
-                  ((double)sizeof(Morpheus::index_type));  // column_indices
-  entry.memory += Aopt->values.dev.nnnz() *
-                  ((double)sizeof(Morpheus::value_type));  // values
-#endif  // HPCG_WITH_MORPHEUS_DYNAMIC
+  entry.memory = count_memory(Aopt->local.dev);
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  entry.memory += count_memory(Aopt->ghost.dev);
+#endif
 
   return entry;
 }
