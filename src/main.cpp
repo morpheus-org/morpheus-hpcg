@@ -445,7 +445,8 @@ int main(int argc, char* argv[]) {
   // All processors are needed here.
 #ifdef HPCG_DEBUG
 #ifdef HPCG_WITH_MORPHEUS
-  HPCG_Morpheus_Vec* xopt = (HPCG_Morpheus_Vec*)x.optimizationData;
+  using Vector_t = HPCG_Morpheus_Vec<Morpheus::value_type>;
+  Vector_t* xopt = (Vector_t*)x.optimizationData;
   Morpheus::copy(xopt->values.dev, xopt->values.host);
 #endif  // HPCG_WITH_MORPHEUS
   double residual = 0;

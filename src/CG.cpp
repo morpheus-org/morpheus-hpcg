@@ -109,7 +109,6 @@ int CG(const SparseMatrix& A, CGData& data, const Vector& b, Vector& x,
   double t_begin = mytimer();  // Start timing right away
   normr          = 0.0;
   double rtz = 0.0, oldrtz = 0.0, alpha = 0.0, beta = 0.0, pAp = 0.0;
-
   double t0 = 0.0, t1 = 0.0, t2 = 0.0, t3 = 0.0, t4 = 0.0, t5 = 0.0;
 
   local_int_t nrow = A.localNumberOfRows;

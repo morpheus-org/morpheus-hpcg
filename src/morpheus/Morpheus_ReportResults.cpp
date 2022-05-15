@@ -29,6 +29,7 @@
 #include "morpheus/Morpheus_Timer.hpp"
 
 #include <sstream>
+#include <fstream>
 
 #ifndef HPCG_NO_MPI
 #include <mpi.h>
