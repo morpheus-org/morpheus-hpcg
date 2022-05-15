@@ -53,6 +53,11 @@ using index_type = local_int_t;
 // e.g dynamic_format
 extern Morpheus::InitArguments args;
 
+extern int local_matrix_fmt;
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+extern int ghost_matrix_fmt;
+#endif
+
 #ifdef HPCG_WITH_MULTI_FORMATS
 #include <vector>
 
