@@ -563,15 +563,6 @@ void ReportResults(const SparseMatrix& A, int numberOfMgLevels,
     doc.get("Reproducibility Information")
         ->add("Scaled residual variance", testnorms_data.variance);
 
-    // #ifdef HPCG_WITH_MORPHEUS
-    //     doc.add("########## Morpheus Report ##########", "");
-    //     doc.add("Morpheus", "");
-    //     doc.get("Morpheus")->add("Format", Ahost.format_enum());
-    //     doc.get("Morpheus")->add("Rows", Ahost.nrows());
-    //     doc.get("Morpheus")->add("Columns", Ahost.ncols());
-    //     doc.get("Morpheus")->add("Non Zeros", Ahost.nnnz());
-    // #endif
-
     doc.add("########## Performance Summary (times in sec) ##########", "");
 
     doc.add("Benchmark Time Summary", "");

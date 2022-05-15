@@ -39,7 +39,10 @@ int MorpheusSparseMatrixGetCoarseLevel(const SparseMatrix& A);
 int MorpheusSparseMatrixGetRank(const SparseMatrix& A);
 
 #ifdef HPCG_WITH_MULTI_FORMATS
-format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A);
+format_report MorpheusSparseMatrixGetLocalProperties(const SparseMatrix& A);
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+format_report MorpheusSparseMatrixGetGhostProperties(const SparseMatrix& A);
+#endif
 #endif
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_SPARSEMATRIX_ROUTINES_HPP

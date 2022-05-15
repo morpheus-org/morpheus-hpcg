@@ -28,8 +28,6 @@
 
 #include "morpheus/Morpheus.hpp"
 
-std::vector<format_id> input_file;
-
 static int SkipUntilEol(FILE *stream) {
   int chOrEof;
   bool finished;
@@ -51,7 +49,7 @@ static int SkipUntilEol(FILE *stream) {
   return chOrEof;
 }
 
-int ReadMorpheusDat(std::string filename) {
+int ReadMorpheusDat(std::string filename, std::vector<format_id> &input_file) {
   FILE *morpheusStream = fopen(filename.c_str(), "r");
 
   if (!morpheusStream) return -1;

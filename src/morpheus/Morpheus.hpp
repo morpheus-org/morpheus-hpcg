@@ -75,9 +75,14 @@ typedef struct format_report {
   double memory;
 } format_report;
 
-extern std::vector<format_id> input_file;
-extern std::vector<format_report> morpheus_report, sub_report;
-#endif
+extern std::vector<format_id> local_input_file;
+extern std::vector<format_report> local_morpheus_report, local_sub_report;
+
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+extern std::vector<format_id> ghost_input_file;
+extern std::vector<format_report> ghost_morpheus_report, ghost_sub_report;
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
+#endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_HPP

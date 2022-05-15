@@ -29,7 +29,7 @@
 void ParseFormats(int argc, char* argv[]);
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
-void ParseInputFormats(int argc, char* argv[]);
+void ParseInputFileFormats(int argc, char* argv[]);
 #endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_WITH_MORPHEUS

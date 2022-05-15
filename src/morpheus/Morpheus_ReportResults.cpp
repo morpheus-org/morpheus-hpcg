@@ -58,6 +58,7 @@ void MPI_FORMAT_ID_type_construct() {
   displacements[2] = MPI_Aint_diff(displacements[2], base_address);
 
   MPI_Datatype types[3] = {MPI_GLOBAL_INT, MPI_INT, MPI_INT};
+
   MPI_Type_create_struct(3, lengths, displacements, types, &MPI_FORMAT_ID);
   MPI_Type_commit(&MPI_FORMAT_ID);
 }
@@ -139,7 +140,6 @@ void ReportTimingResults() {
 #else
     size_t report_mg_levels = 1;
 #endif
-    std::cout << "MG Levels = " << report_mg_levels << std::endl;
 
     std::stringstream header;
     header << std::setw(10) << "Process" << del;
@@ -179,7 +179,8 @@ void ReportTimingResults() {
   }
 }
 
-void ReportResults() {
+void ReportResults_Impl(std::string prefix, std::vector<format_report>& report,
+                        std::vector<format_report>& sub_report) {
   std::string eol = "\n", del = "\t";
   std::string result = "";
   int rank           = 0;
@@ -189,10 +190,10 @@ void ReportResults() {
   MPI_FORMAT_REPORT_type_construct();
 
   MPI_Gather(sub_report.data(), sub_report.size(), MPI_FORMAT_REPORT,
-             morpheus_report.data(), sub_report.size(), MPI_FORMAT_REPORT, 0,
+             report.data(), sub_report.size(), MPI_FORMAT_REPORT, 0,
              MPI_COMM_WORLD);
 #else
-  morpheus_report.assign(sub_report.begin(), sub_report.end())
+  report.assign(sub_report.begin(), sub_report.end())
 #endif
 
   if (rank == 0) {
@@ -204,24 +205,32 @@ void ReportResults() {
     header << std::setw(10) << "Ncols" << del;
     header << std::setw(10) << "Nnnz" << del;
     header << std::setw(10) << "Memory(Bytes)" << del;
-    result += header.str() + eol;
-    for (size_t i = 0; i < morpheus_report.size(); i++) {
-      std::stringstream val;
-      val << std::setw(10) << morpheus_report[i].id.rank << del;
-      val << std::setw(10) << morpheus_report[i].id.mg_level << del;
-      val << std::setw(10) << morpheus_report[i].id.format << del;
-      val << std::setw(10) << morpheus_report[i].nrows << del;
-      val << std::setw(10) << morpheus_report[i].ncols << del;
-      val << std::setw(10) << morpheus_report[i].nnnz << del;
 
-      val << std::setprecision(14) << morpheus_report[i].memory;
+    result += header.str() + eol;
+    for (size_t i = 0; i < report.size(); i++) {
+      std::stringstream val;
+      val << std::setw(10) << report[i].id.rank << del;
+      val << std::setw(10) << report[i].id.mg_level << del;
+      val << std::setw(10) << report[i].id.format << del;
+      val << std::setw(10) << report[i].nrows << del;
+      val << std::setw(10) << report[i].ncols << del;
+      val << std::setw(10) << report[i].nnnz << del;
+
+      val << std::setprecision(14) << report[i].memory;
 
       result += val.str() + eol;
     }
 
-    std::ofstream out("morpheus-output.txt");
+    std::ofstream out("morpheus-" + prefix + "-output.txt");
     out << result;
   }
+}
+
+void ReportResults() {
+  ReportResults_Impl("local", local_morpheus_report, local_sub_report);
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  ReportResults_Impl("ghost", ghost_morpheus_report, ghost_sub_report);
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 }
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS

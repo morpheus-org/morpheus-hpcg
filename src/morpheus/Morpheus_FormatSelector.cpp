@@ -26,19 +26,21 @@
 
 #ifdef HPCG_WITH_MORPHEUS
 
+#include "morpheus/Morpheus.hpp"
 #ifdef HPCG_WITH_MULTI_FORMATS
 #include "morpheus/Morpheus_SparseMatrixRoutines.hpp"
-#include "morpheus/Morpheus_ReadHpcgDat.hpp"
+#include "morpheus/Morpheus_Parser.hpp"
 #endif  // HPCG_WITH_MULTI_FORMATS
 
-int GetFormat(SparseMatrix &A) {
-  int fmt_index = args.dynamic_format;
+int GetFormat_Impl(const SparseMatrix &A, int default_matrix_fmt,
+                   std::vector<format_id> &input_file) {
+  int fmt_index = default_matrix_fmt;
 
 #ifdef HPCG_WITH_MULTI_FORMATS
   if (input_file.size() == 0) return fmt_index;
 
   // select format based on the rank and coarse level
-  for (int i = 0; i < input_file.size(); i++) {
+  for (size_t i = 0; i < input_file.size(); i++) {
     if (MorpheusSparseMatrixGetRank(A) == input_file[i].rank &&
         MorpheusSparseMatrixGetCoarseLevel(A) == input_file[i].mg_level) {
       fmt_index = input_file[i].format;
@@ -49,5 +51,15 @@ int GetFormat(SparseMatrix &A) {
 
   return fmt_index;
 }
+
+int GetLocalFormat(const SparseMatrix &A) {
+  return GetFormat_Impl(A, local_matrix_fmt, local_input_file);
+}
+
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+int GetGhostFormat(const SparseMatrix &A) {
+  return GetFormat_Impl(A, ghost_matrix_fmt, ghost_input_file);
+}
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 
 #endif  // HPCG_WITH_MORPHEUS

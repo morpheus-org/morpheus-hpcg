@@ -29,12 +29,23 @@
 #include "morpheus/Morpheus_ReadHpcgDat.hpp"
 #endif  // HPCG_WITH_MULTI_FORMATS
 
+#ifndef HPCG_NO_MPI
+#include <mpi.h>
+#endif
+
 #include <string>
 
 int local_matrix_fmt;
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
 int ghost_matrix_fmt;
-#endif
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
+
+#ifdef HPCG_WITH_MULTI_FORMATS
+std::vector<format_id> local_input_file;
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+std::vector<format_id> ghost_input_file;
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
+#endif  // HPCG_WITH_MULTI_FORMATS
 
 static int startswith(const char* s, const char* prefix) {
   size_t n = strlen(prefix);
@@ -43,23 +54,36 @@ static int startswith(const char* s, const char* prefix) {
 }
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
-void ParseInputFormats(int argc, char* argv[]) {
-  std::string formats_filename, formats_tag("--hpcg-formats=");
+void ParseInputFileFormats_Impl(int argc, char* argv[], std::string prefix,
+                                std::vector<format_id>& input_file) {
+  std::string filename, tag("--hpcg-" + prefix + "-formats=");
+
+  int rank = 0;
+#ifndef HPCG_NO_MPI
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
 
   for (int i = 1; i <= argc && argv[i]; ++i) {
-    if (startswith(argv[i], formats_tag.c_str())) {
-      formats_filename = std::string(argv[i]);
-      formats_filename.erase(formats_filename.find(formats_tag),
-                             formats_tag.length());
+    if (startswith(argv[i], tag.c_str())) {
+      filename = std::string(argv[i]);
+      filename.erase(filename.find(tag), tag.length());
 
-      if (params.comm_rank == 0) {
-        std::cout << "Reading HPCG formats file from: " << formats_filename
-                  << std::endl;
+      if (rank == 0) {
+        std::cout << "Reading HPCG input file for " << prefix
+                  << " formats from: " << filename << std::endl;
       }
 
-      ReadMorpheusDat(formats_filename);
+      ReadMorpheusDat(filename, input_file);
     }
   }
+}
+
+void ParseInputFileFormats(int argc, char* argv[]) {
+  ParseInputFileFormats_Impl(argc, argv, "local", local_input_file);
+
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  ParseInputFileFormats_Impl(argc, argv, "ghost", ghost_input_file);
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED}
 }
 #endif  // HPCG_WITH_MULTI_FORMATS
 
@@ -79,6 +103,7 @@ void ParseFormat_Impl(int argc, char* argv[], std::string prefix,
 
 void ParseFormats(int argc, char* argv[]) {
   ParseFormat_Impl(argc, argv, "local", &local_matrix_fmt);
+
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
   ParseFormat_Impl(argc, argv, "ghost", &ghost_matrix_fmt);
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED

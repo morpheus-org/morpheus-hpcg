@@ -219,7 +219,7 @@ int HPCG_Init(int *argc_p, char ***argv_p, HPCG_Params &params) {
 
 #if defined(HPCG_WITH_MORPHEUS)
 #if defined(HPCG_WITH_MULTI_FORMATS)
-  ParseInputFormats(argc, argv);
+  ParseInputFileFormats(argc, argv);
 #endif
 
   ParseFormats(argc, argv);

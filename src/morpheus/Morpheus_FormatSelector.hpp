@@ -26,6 +26,10 @@
 
 #include "SparseMatrix.hpp"
 
-int GetFormat(SparseMatrix &A);
+int GetLocalFormat(const SparseMatrix &A);
+
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+int GetGhostFormat(const SparseMatrix &A);
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 
 #endif  // HPCG_MORPHEUS_FORMAT_SELECTOR_HPP

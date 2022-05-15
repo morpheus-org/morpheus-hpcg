@@ -83,8 +83,8 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetFormat(A));
-  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, 1);  // All to csr for now
+  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetLocalFormat(A));
+  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, GetGhostFormat(A));
 #endif
   // Now send to device
   Aopt->local.dev =
@@ -115,7 +115,7 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetFormat(A));
+  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetLocalFormat(A));
 #endif
   // Now send to device
   Aopt->local.dev =
@@ -212,7 +212,7 @@ double count_memory(const MorpheusMatrix& A) {
   return memory;
 }
 
-format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A) {
+format_report MorpheusSparseMatrixGetLocalProperties(const SparseMatrix& A) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
 
   format_report entry;
@@ -226,11 +226,27 @@ format_report MorpheusSparseMatrixGetProperties(const SparseMatrix& A) {
   entry.nnnz  = Aopt->local.dev.nnnz();
 
   entry.memory = count_memory(Aopt->local.dev);
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-  entry.memory += count_memory(Aopt->ghost.dev);
-#endif
 
   return entry;
 }
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+format_report MorpheusSparseMatrixGetGhostProperties(const SparseMatrix& A) {
+  HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
+
+  format_report entry;
+
+  entry.id.rank     = MorpheusSparseMatrixGetRank(A);
+  entry.id.mg_level = MorpheusSparseMatrixGetCoarseLevel(A);
+  entry.id.format   = Aopt->ghost.dev.active_index();
+
+  entry.nrows = Aopt->ghost.dev.nrows();
+  entry.ncols = Aopt->ghost.dev.ncols();
+  entry.nnnz  = Aopt->ghost.dev.nnnz();
+
+  entry.memory = count_memory(Aopt->ghost.dev);
+
+  return entry;
+}
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS

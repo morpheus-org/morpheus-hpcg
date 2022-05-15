@@ -24,8 +24,12 @@
 #ifndef HPCG_MORPHEUS_READHPCGDAT_HPP
 #define HPCG_MORPHEUS_READHPCGDAT_HPP
 
+#if defined(HPCG_WITH_MORPHEUS)
+
+#include "morpheus/Morpheus.hpp"
 #include <string>
 
-int ReadMorpheusDat(std::string filename);
+int ReadMorpheusDat(std::string filename, std::vector<format_id> &input_file);
 
+#endif  // HPCG_WITH_MORPHEUS
 #endif  // HPCG_MORPHEUS_READHPCGDAT_HPP
