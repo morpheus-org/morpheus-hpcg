@@ -472,9 +472,9 @@ int main(int argc, char* argv[]) {
                 global_failure, quickPath);
 
 #if defined(HPCG_WITH_MORPHEUS)
+  ReportResults();
 #if defined(HPCG_WITH_MULTI_FORMATS)
   ReportTimingResults();
-  ReportResults();
 #endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS
 

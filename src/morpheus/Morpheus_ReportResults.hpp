@@ -25,6 +25,8 @@
 #define HPCG_MORPHEUS_REPORTRESULTS_HPP
 
 void ReportResults();
+#if defined(HPCG_WITH_MULTI_FORMATS)
 void ReportTimingResults();
+#endif
 
 #endif  // HPCG_MORPHEUS_REPORTRESULTS_HPP

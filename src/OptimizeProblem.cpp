@@ -66,12 +66,13 @@
 #include "morpheus/Morpheus_IO.hpp"
 #endif
 
-#if defined(HPCG_WITH_MULTI_FORMATS)
-std::vector<morpheus_timers> mtimers, sub_mtimers;
 std::vector<format_report> local_morpheus_report, local_sub_report;
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
 std::vector<format_report> ghost_morpheus_report, ghost_sub_report;
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
+
+#if defined(HPCG_WITH_MULTI_FORMATS)
+std::vector<morpheus_timers> mtimers, sub_mtimers;
 #endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_WITH_MORPHEUS
@@ -111,12 +112,10 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   MorpheusSparseMatrixWrite(A);
 #endif
 
-#ifdef HPCG_WITH_MULTI_FORMATS
   local_sub_report.push_back(MorpheusSparseMatrixGetLocalProperties(A));
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
   ghost_sub_report.push_back(MorpheusSparseMatrixGetGhostProperties(A));
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
-#endif  // HPCG_WITH_MULTI_FORMATS
 
   int levels = 1;
   // Process all coarse level matrices
@@ -133,12 +132,10 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
     MorpheusSparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
 #endif
 
-#ifdef HPCG_WITH_MULTI_FORMATS
     local_sub_report.push_back(MorpheusSparseMatrixGetLocalProperties(*M));
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
     ghost_sub_report.push_back(MorpheusSparseMatrixGetGhostProperties(*M));
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
-#endif  // HPCG_WITH_MULTI_FORMATS
 
     // Go to next level in hierarchy
     M = M->Ac;
@@ -155,23 +152,28 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
   }
 
 #ifdef HPCG_WITH_MULTI_FORMATS
-  if (A.geom->rank == 0) {
-    int nprocs = A.geom->size;
-    mtimers.resize(nprocs * levels);
-    local_morpheus_report.resize(nprocs * levels);
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-    ghost_morpheus_report.resize(nprocs * levels);
-#endif
-  } else {
-    mtimers.resize(0);
-    local_morpheus_report.resize(0);
-#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-    ghost_morpheus_report.resize(0);
-#endif
-  }
   // Local timers
   sub_mtimers.resize(levels);
+  if (A.geom->rank == 0) {
+    mtimers.resize(A.geom->size * levels);
+  } else {
+    mtimers.resize(0);
+  }
 #endif  // HPCG_WITH_MULTI_FORMATS
+
+  if (A.geom->rank == 0) {
+    local_morpheus_report.resize(A.geom->size * levels);
+  } else {
+    local_morpheus_report.resize(0);
+  }
+
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  if (A.geom->rank == 0) {
+    ghost_morpheus_report.resize(A.geom->size * levels);
+  } else {
+    ghost_morpheus_report.resize(0);
+  }
+#endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 
   MorpheusInitializeVector(b);
   MorpheusInitializeVector(x);

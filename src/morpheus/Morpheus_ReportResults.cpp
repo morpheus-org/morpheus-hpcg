@@ -24,9 +24,11 @@
 #include "morpheus/Morpheus_ReportResults.hpp"
 
 #if defined(HPCG_WITH_MORPHEUS)
-#if defined(HPCG_WITH_MULTI_FORMATS)
 #include "morpheus/Morpheus.hpp"
+
+#if defined(HPCG_WITH_MULTI_FORMATS)
 #include "morpheus/Morpheus_Timer.hpp"
+#endif
 
 #include <sstream>
 #include <fstream>
@@ -88,7 +90,7 @@ void MPI_FORMAT_REPORT_type_construct() {
   MPI_Type_create_struct(5, lengths, displacements, types, &MPI_FORMAT_REPORT);
   MPI_Type_commit(&MPI_FORMAT_REPORT);
 }
-
+#if defined(HPCG_WITH_MULTI_FORMATS)
 void MPI_MORPHEUS_TIMERS_type_construct() {
   int lengths[5] = {1, 1, 1, 1, 1};
   MPI_Aint displacements[5];
@@ -113,9 +115,11 @@ void MPI_MORPHEUS_TIMERS_type_construct() {
                          &MPI_MORPHEUS_TIMERS);
   MPI_Type_commit(&MPI_MORPHEUS_TIMERS);
 }
+#endif  // HPCG_WITH_MULTI_FORMATS
 
 #endif  // HPCG_NO_MPI
 
+#if defined(HPCG_WITH_MULTI_FORMATS)
 void ReportTimingResults() {
   std::string eol = "\n", del = "\t";
   std::string result = "";
@@ -178,6 +182,7 @@ void ReportTimingResults() {
     out << result;
   }
 }
+#endif  // HPCG_WITH_MULTI_FORMATS
 
 void ReportResults_Impl(std::string prefix, std::vector<format_report>& report,
                         std::vector<format_report>& sub_report) {
@@ -232,5 +237,4 @@ void ReportResults() {
   ReportResults_Impl("ghost", ghost_morpheus_report, ghost_sub_report);
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 }
-#endif  // HPCG_WITH_MULTI_FORMATS
 #endif  // HPCG_WITH_MORPHEUS
