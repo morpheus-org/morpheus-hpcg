@@ -200,39 +200,12 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 // Helper function (see OptimizeProblem.hpp for details)
 double OptimizeProblemMemoryUse(const SparseMatrix& A) {
   double fnbytes = 0.0;
-  // #ifdef HPCG_WITH_MORPHEUS
-  //   using index_type = typename Morpheus::SparseMatrix::index_type;
-  //   using value_type = typename Morpheus::SparseMatrix::value_type;
-  //   auto Ahost       = ((HPCG_Morpheus_Mat*)A.optimizationData)->host;
-
-  // #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
-  //   if (Ahost.format_enum() == Morpheus::COO_FORMAT) {
-  //     fnbytes += Ahost.nnnz() * ((double)sizeof(index_type));  // row_indices
-  //     fnbytes += Ahost.nnnz() * ((double)sizeof(index_type));  //
-  //     column_indices fnbytes += Ahost.nnnz() * ((double)sizeof(value_type));
-  //     // values
-  //   } else if (Ahost.format_enum() == Morpheus::CSR_FORMAT) {
-  //     fnbytes +=
-  //         (Ahost.nrows() + 1) * ((double)sizeof(index_type));  // row_offsets
-  //     fnbytes += Ahost.nnnz() * ((double)sizeof(index_type));  //
-  //     column_indices fnbytes += Ahost.nnnz() * ((double)sizeof(value_type));
-  //     // values
-  //   } else if (Ahost.format_enum() == Morpheus::DIA_FORMAT) {
-  //     typename Morpheus::Dia::HostMirror Adia = Ahost;
-  //     fnbytes +=
-  //         Adia.ndiags() * ((double)sizeof(index_type));  // diagonal_offsets
-  //     fnbytes += (Adia.nrows() * Adia.ncols()) *
-  //     ((double)sizeof(value_type));  // values
-  //   } else {
-  //     throw Morpheus::RuntimeException("Selected invalid format.");
-  //   }
-  // #else
-  //   fnbytes += (Ahost.nrows() + 1) * ((double)sizeof(index_type)); //
-  //   row_offsets fnbytes += Ahost.nnnz() * ((double)sizeof(index_type)); //
-  //   column_indices fnbytes += Ahost.nnnz() * ((double)sizeof(value_type)); //
-  //   values
-  // #endif  // HPCG_WITH_MORPHEUS_DYNAMIC
-  // #endif  // HPCG_WITH_MORPHEUS
+#ifdef HPCG_WITH_MORPHEUS
+  fnbytes += MorpheusSparseMatrixGetLocalProperties(A).memory;
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+  fnbytes += MorpheusSparseMatrixGetLocalProperties(A).memory;
+#endif
+#endif  // HPCG_WITH_MORPHEUS
 
   return fnbytes;
 }

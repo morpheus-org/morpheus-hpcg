@@ -180,7 +180,6 @@ int MorpheusSparseMatrixGetRank(const SparseMatrix& A) {
   return Aopt->rank;
 }
 
-#ifdef HPCG_WITH_MULTI_FORMATS
 template <typename MorpheusMatrix>
 double count_memory(const MorpheusMatrix& A) {
   double memory     = 0;
@@ -248,5 +247,5 @@ format_report MorpheusSparseMatrixGetGhostProperties(const SparseMatrix& A) {
   return entry;
 }
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
-#endif  // HPCG_WITH_MULTI_FORMATS
+
 #endif  // HPCG_WITH_MORPHEUS

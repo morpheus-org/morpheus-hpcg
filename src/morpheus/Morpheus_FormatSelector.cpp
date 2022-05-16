@@ -53,12 +53,22 @@ int GetFormat_Impl(const SparseMatrix &A, int default_matrix_fmt,
 }
 
 int GetLocalFormat(const SparseMatrix &A) {
-  return GetFormat_Impl(A, local_matrix_fmt, local_input_file);
+#ifdef HPCG_WITH_MULTI_FORMATS
+  std::vector<format_id> input_file = local_input_file;
+#else
+  std::vector<format_id> input_file = std::vector<format_id>();
+#endif
+  return GetFormat_Impl(A, local_matrix_fmt, input_file);
 }
 
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
 int GetGhostFormat(const SparseMatrix &A) {
-  return GetFormat_Impl(A, ghost_matrix_fmt, ghost_input_file);
+#ifdef HPCG_WITH_MULTI_FORMATS
+  std::vector<format_id> input_file = ghost_input_file;
+#else
+  std::vector<format_id> input_file = std::vector<format_id>();
+#endif
+  return GetFormat_Impl(A, ghost_matrix_fmt, input_file);
 }
 #endif  // HPCG_WITH_SPLIT_DISTRIBUTED
 

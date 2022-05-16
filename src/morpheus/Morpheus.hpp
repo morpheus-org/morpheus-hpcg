@@ -27,6 +27,7 @@
 #ifdef HPCG_WITH_MORPHEUS
 #include <Morpheus_Core.hpp>
 #include "Geometry.hpp"  //local_int_t
+#include <vector>
 
 // TODO: Move this in Morpheus Core
 #define MORPHEUS_START_SCOPE() {  // Open Morpheus Scope
@@ -58,9 +59,6 @@ extern int local_matrix_fmt;
 extern int ghost_matrix_fmt;
 #endif
 
-#ifdef HPCG_WITH_MULTI_FORMATS
-#include <vector>
-
 typedef struct format_id {
   global_int_t rank;
   int mg_level;
@@ -75,6 +73,7 @@ typedef struct format_report {
   double memory;
 } format_report;
 
+#ifdef HPCG_WITH_MULTI_FORMATS
 extern std::vector<format_id> local_input_file;
 extern std::vector<format_report> local_morpheus_report, local_sub_report;
 
