@@ -198,7 +198,7 @@ void ReportResults_Impl(std::string prefix, std::vector<format_report>& report,
              report.data(), sub_report.size(), MPI_FORMAT_REPORT, 0,
              MPI_COMM_WORLD);
 #else
-  report.assign(sub_report.begin(), sub_report.end())
+  report.assign(sub_report.begin(), sub_report.end());
 #endif
 
   if (rank == 0) {
