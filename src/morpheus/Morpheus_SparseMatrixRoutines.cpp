@@ -197,8 +197,9 @@ double count_memory(const MorpheusMatrix& A) {
     // values
   } else if (A.active_enum() == Morpheus::DIA_FORMAT) {
     typename Morpheus::Dia Adia = A;
-    memory += Adia.ndiags() * index_size;                  // diagonal_offsets
-    memory += (Adia.nrows() * Adia.ncols()) * value_size;  // values
+    memory += Adia.ndiags() * index_size;  // diagonal_offsets
+    memory +=
+        ((double)Adia.nrows() * (double)Adia.ncols()) * value_size;  // values
   } else {
     throw Morpheus::RuntimeException("Selected invalid format.");
   }
