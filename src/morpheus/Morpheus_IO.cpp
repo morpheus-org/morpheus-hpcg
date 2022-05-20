@@ -66,43 +66,48 @@ void SparseMatrixWrite(SparseMatrix& A, std::string prefix) {
 void MorpheusSparseMatrixWrite(SparseMatrix& A, std::string prefix) {
   HPCG_Morpheus_Mat* Aopt = (HPCG_Morpheus_Mat*)A.optimizationData;
 
-  if (Aopt->local.dev.active_enum() == Morpheus::CSR_FORMAT) {
-    typename Morpheus::Csr Alocal = Aopt->local.dev;
-    std::stringstream local_entry;
-    for (local_int_t i = 0; i < Alocal.nrows(); i++) {
-      for (local_int_t jj = Alocal.crow_offsets(i);
-           jj < Alocal.crow_offsets(i + 1); jj++) {
-        local_entry << i << " " << Alocal.ccolumn_indices(jj) << " "
-                    << Alocal.cvalues(jj) << std::endl;
-      }
+  // Bring data to host first
+  Morpheus::copy(Aopt->local.dev, Aopt->local.host);
+
+  // Convert to CSR
+  typename Morpheus::Csr::HostMirror Alocal;
+  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, Alocal);
+
+  std::stringstream local_entry;
+  for (local_int_t i = 0; i < Alocal.nrows(); i++) {
+    for (local_int_t jj = Alocal.crow_offsets(i);
+         jj < Alocal.crow_offsets(i + 1); jj++) {
+      local_entry << i << " " << Alocal.ccolumn_indices(jj) << " "
+                  << Alocal.cvalues(jj) << std::endl;
     }
-    std::string local_filename = prefix + "morpheus-local-matrix-" +
-                                 std::to_string(A.geom->rank) + ".txt";
-    std::ofstream local_out(local_filename);
-    local_out << local_entry.str();
-  } else {
-    throw Morpheus::RuntimeException("Alocal must be CSR");
   }
+  std::string local_filename =
+      prefix + "morpheus-local-matrix-" + std::to_string(A.geom->rank) + ".txt";
+  std::ofstream local_out(local_filename);
+  local_out << local_entry.str();
 
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-  if (Aopt->ghost.dev.active_enum() == Morpheus::CSR_FORMAT) {
-    typename Morpheus::Csr Aghost = Aopt->ghost.dev;
-    std::stringstream external_entry;
+  // Bring data to host first
+  Morpheus::copy(Aopt->ghost.dev, Aopt->ghost.host);
 
-    for (local_int_t i = 0; i < Aghost.nrows(); i++) {
-      for (local_int_t jj = Aghost.crow_offsets(i);
-           jj < Aghost.crow_offsets(i + 1); jj++) {
-        external_entry << i << " " << Aghost.ccolumn_indices(jj) << " "
-                       << Aghost.cvalues(jj) << std::endl;
-      }
+  // Convert to CSR
+  typename Morpheus::Csr::HostMirror Aghost;
+  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, Aghost);
+
+  typename Morpheus::Csr Aghost = Aopt->ghost.dev;
+  std::stringstream external_entry;
+
+  for (local_int_t i = 0; i < Aghost.nrows(); i++) {
+    for (local_int_t jj = Aghost.crow_offsets(i);
+         jj < Aghost.crow_offsets(i + 1); jj++) {
+      external_entry << i << " " << Aghost.ccolumn_indices(jj) << " "
+                     << Aghost.cvalues(jj) << std::endl;
     }
-    std::string external_filename = prefix + "morpheus-external-matrix-" +
-                                    std::to_string(A.geom->rank) + ".txt";
-    std::ofstream external_out(external_filename);
-    external_out << external_entry.str();
-  } else {
-    throw Morpheus::RuntimeException("Aghost must be CSR");
   }
+  std::string external_filename = prefix + "morpheus-external-matrix-" +
+                                  std::to_string(A.geom->rank) + ".txt";
+  std::ofstream external_out(external_filename);
+  external_out << external_entry.str();
 #endif
 }
 
