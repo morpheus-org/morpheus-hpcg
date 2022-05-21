@@ -94,9 +94,7 @@ void MorpheusSparseMatrixWrite(SparseMatrix& A, std::string prefix) {
   typename Morpheus::Csr::HostMirror Aghost;
   Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, Aghost);
 
-  typename Morpheus::Csr Aghost = Aopt->ghost.dev;
   std::stringstream external_entry;
-
   for (local_int_t i = 0; i < Aghost.nrows(); i++) {
     for (local_int_t jj = Aghost.crow_offsets(i);
          jj < Aghost.crow_offsets(i + 1); jj++) {
