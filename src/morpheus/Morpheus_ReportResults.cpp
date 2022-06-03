@@ -92,8 +92,8 @@ void MPI_FORMAT_REPORT_type_construct() {
 }
 #if defined(HPCG_WITH_MULTI_FORMATS)
 void MPI_MORPHEUS_TIMERS_type_construct() {
-  int lengths[5] = {1, 1, 1, 1, 1};
-  MPI_Aint displacements[5];
+  int lengths[7] = {1, 1, 1, 1, 1, 1, 1};
+  MPI_Aint displacements[7];
   MPI_Aint base_address;
   morpheus_timers dummy_timer;
 
@@ -103,15 +103,19 @@ void MPI_MORPHEUS_TIMERS_type_construct() {
   MPI_Get_address(&dummy_timer.MG, &displacements[2]);
   MPI_Get_address(&dummy_timer.HALO_SWAP, &displacements[3]);
   MPI_Get_address(&dummy_timer.CG, &displacements[4]);
+  MPI_Get_address(&dummy_timer.SPMV_LOCAL, &displacements[5]);
+  MPI_Get_address(&dummy_timer.SPMV_GHOST, &displacements[6]);
   displacements[0] = MPI_Aint_diff(displacements[0], base_address);
   displacements[1] = MPI_Aint_diff(displacements[1], base_address);
   displacements[2] = MPI_Aint_diff(displacements[2], base_address);
   displacements[3] = MPI_Aint_diff(displacements[3], base_address);
   displacements[4] = MPI_Aint_diff(displacements[4], base_address);
+  displacements[5] = MPI_Aint_diff(displacements[5], base_address);
+  displacements[6] = MPI_Aint_diff(displacements[6], base_address);
 
-  MPI_Datatype types[5] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
-                           MPI_DOUBLE};
-  MPI_Type_create_struct(5, lengths, displacements, types,
+  MPI_Datatype types[7] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
+                           MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+  MPI_Type_create_struct(7, lengths, displacements, types,
                          &MPI_MORPHEUS_TIMERS);
   MPI_Type_commit(&MPI_MORPHEUS_TIMERS);
 }
@@ -121,10 +125,8 @@ void MPI_MORPHEUS_TIMERS_type_construct() {
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
 void ReportTimingResults() {
-  std::string eol = "\n", del = "\t";
+  std::string eol = "\n", del = ",";
   std::string result = "";
-  std::vector<std::string> timers(
-      {"SPMV ", "SYMGS", "MG   ", "Halo ", "CG   "});
 
   int rank = 0;
 #ifndef HPCG_NO_MPI
@@ -146,13 +148,13 @@ void ReportTimingResults() {
 #endif
 
     std::stringstream header;
-    header << std::setw(10) << "Process" << del;
-    header << std::setw(10) << "MG_Level" << del;
-    header << std::setw(20) << "SPMV(s)" << del;
-    header << std::setw(20) << "SYMGS(s)" << del;
-    header << std::setw(20) << "MG(s)" << del;
-    header << std::setw(20) << "Halo_Swap(s)" << del;
-    header << std::setw(20) << "CG(s)" << del;
+    header << "Process" << del << "MG_Level" << del << "SPMV(s)" << del
+           << "SPMV_Local(s)" << del
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+           << "SPMV_Ghost(s)" << del
+#endif
+           << "SYMGS(s)" << del << "MG(s)" << del << "Halo_Swap(s)" << del
+           << "CG(s)";
     result += header.str() + eol;
 
     for (size_t i = 0; i < mtimers.size(); i++) {
@@ -162,18 +164,16 @@ void ReportTimingResults() {
       if (current_level >= report_mg_levels) continue;
 
       std::stringstream val;
-      val << std::setw(10) << current_proc << del;
-      val << std::setw(10) << current_level << del;
-      val << std::setw(20) << std::fixed << std::setprecision(14)
-          << mtimers[i].SPMV << del;
-      val << std::setw(20) << std::fixed << std::setprecision(14)
-          << mtimers[i].SYMGS << del;
-      val << std::setw(20) << std::fixed << std::setprecision(14)
-          << mtimers[i].MG << del;
-      val << std::setw(20) << std::fixed << std::setprecision(14)
-          << mtimers[i].HALO_SWAP << del;
-      val << std::setw(20) << std::fixed << std::setprecision(14)
-          << mtimers[i].CG;
+      val << current_proc << del << current_level << del << std::fixed
+          << std::setprecision(14) << mtimers[i].SPMV << del << std::fixed
+          << std::setprecision(14) << mtimers[i].SPMV_LOCAL << del
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+          << std::fixed << std::setprecision(14) << mtimers[i].SPMV_GHOST << del
+#endif
+          << std::fixed << std::setprecision(14) << mtimers[i].SYMGS << del
+          << std::fixed << std::setprecision(14) << mtimers[i].MG << del
+          << std::fixed << std::setprecision(14) << mtimers[i].HALO_SWAP << del
+          << std::fixed << std::setprecision(14) << mtimers[i].CG;
 
       result += val.str() + eol;
     }
@@ -186,7 +186,7 @@ void ReportTimingResults() {
 
 void ReportResults_Impl(std::string prefix, std::vector<format_report>& report,
                         std::vector<format_report>& sub_report) {
-  std::string eol = "\n", del = "\t";
+  std::string eol = "\n", del = ",";
   std::string result = "";
   int rank           = 0;
 
@@ -203,25 +203,17 @@ void ReportResults_Impl(std::string prefix, std::vector<format_report>& report,
 
   if (rank == 0) {
     std::stringstream header;
-    header << std::setw(10) << "Process" << del;
-    header << std::setw(10) << "MG_Level" << del;
-    header << std::setw(10) << "Format" << del;
-    header << std::setw(10) << "NRows" << del;
-    header << std::setw(10) << "Ncols" << del;
-    header << std::setw(10) << "Nnnz" << del;
-    header << std::setw(10) << "Memory(Bytes)" << del;
+    header << "Process" << del << "MG_Level" << del << "Format" << del
+           << "NRows" << del << "Ncols" << del << "Nnnz" << del
+           << "Memory(Bytes)";
 
     result += header.str() + eol;
     for (size_t i = 0; i < report.size(); i++) {
       std::stringstream val;
-      val << std::setw(10) << report[i].id.rank << del;
-      val << std::setw(10) << report[i].id.mg_level << del;
-      val << std::setw(10) << report[i].id.format << del;
-      val << std::setw(10) << report[i].nrows << del;
-      val << std::setw(10) << report[i].ncols << del;
-      val << std::setw(10) << report[i].nnnz << del;
-
-      val << std::setprecision(14) << report[i].memory;
+      val << report[i].id.rank << del << report[i].id.mg_level << del
+          << report[i].id.format << del << report[i].nrows << del
+          << report[i].ncols << del << report[i].nnnz << del
+          << std::setprecision(14) << report[i].memory;
 
       result += val.str() + eol;
     }

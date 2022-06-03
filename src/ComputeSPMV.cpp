@@ -85,12 +85,12 @@
 */
 int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
 #ifdef HPCG_WITH_MORPHEUS
-  double t_begin = morpheus_timer(), t0 = 0.0;
+  double t_begin = morpheus_timer(), t0 = 0.0, tspmv = 0.0;
 #ifndef HPCG_NO_MPI
-  double t1 = 0.0;
+  double thalo = 0.0;
   MTICK();
   MorpheusExchangeHalo(A, x);
-  MTOCK(t1);
+  MTOCK(thalo);
 #endif  // HPCG_NO_MPI
 
   using Vector_t          = HPCG_Morpheus_Vec<Morpheus::value_type>;
@@ -106,21 +106,35 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   // wrap vector to local and ghost part
   auto xlocal = uvec(Alocal.nrows(), xv.data());
   auto xghost = uvec(Aghost.ncols(), xv.data() + Aghost.nrows());
-  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, yv);
-  Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, yv, false);
 
-#else
-  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xv, yv);
-#endif
+  double tlocal = morpheus_timer();
+  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, yv);
   Kokkos::fence();
-  t0 = morpheus_timer() - t_begin;
+  tlocal = morpheus_timer() - tlocal;
+
+  double tghost = morpheus_timer();
+  Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, yv, false);
+  Kokkos::fence();
+  tghost = morpheus_timer() - tghost;
+#else
+  double tlocal = morpheus_timer();
+  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xv, yv);
+  Kokkos::fence();
+  tlocal = morpheus_timer() - tlocal;
+#endif
+
+  tspmv = morpheus_timer() - t_begin;
 
 #if defined(HPCG_WITH_MULTI_FORMATS)
   if (A.optimizationData != 0) {
     const int level = MorpheusSparseMatrixGetCoarseLevel(A);
-    sub_mtimers[level].SPMV += t0;
+    sub_mtimers[level].SPMV += tspmv;
+    sub_mtimers[level].SPMV_LOCAL += tlocal;
+#if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
+    sub_mtimers[level].SPMV_GHOST += tghost;
+#endif
 #ifndef HPCG_NO_MPI
-    sub_mtimers[level].HALO_SWAP += t1;
+    sub_mtimers[level].HALO_SWAP += thalo;
 #endif  // HPCG_NO_MPI
   }
 #endif  // HPCG_WITH_MULTI_FORMATS

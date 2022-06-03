@@ -36,8 +36,16 @@ typedef struct morpheus_timers {
   double MG;
   double HALO_SWAP;
   double CG;
+  double SPMV_LOCAL, SPMV_GHOST;
 
-  morpheus_timers() : SPMV(0), SYMGS(0), MG(0), HALO_SWAP(0), CG(0) {}
+  morpheus_timers()
+      : SPMV(0),
+        SYMGS(0),
+        MG(0),
+        HALO_SWAP(0),
+        CG(0),
+        SPMV_LOCAL(0),
+        SPMV_GHOST(0) {}
 
 } morpheus_timers;
 
