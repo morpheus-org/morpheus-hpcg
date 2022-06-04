@@ -28,10 +28,11 @@ create_hpcg_header() {
     header="$header,IterationCountTestOptIter,ReproducibilityTestMean,ReproducibilityTestVar"
     header="$header,LinearSize,LinearNnz"
     header="$header,TimeTotal,TimeOpt,TimeDot,TimeWaxpby,TimeSpmv,TimeMG"
-    header="$header,FPTotal,FPDot,FPWaxpby,FPSpmv,FPMG"
-    header="$header,BWTotal,BWRead,BWWrite"
-    header="$header,AITotal,AIDot,AIWaxpby,AISpmv,AIMG"
-    header="$header,SetupTime,MemoryData,MemoryOpt,OptOverheadsTime,OptimizedTimes"
+    header="$header,FPTotal,FPDot,FPWaxpby,FPSpmv,FPMG,FPTotalWithConv"
+    header="$header,BWTotal,BWRead,BWWrite,BWTotalWithConv"
+    header="$header,FlopRateTotal,FlopRateDot,FlopRateWaxpby,FlopRateSpmv,FlopRateMG"
+    header="$header,FlopRateWithConv,FlopRateFinal,FlopRateHistorical"
+    header="$header,SetupTime,MemoryData,MemoryOpt,MemoryBytesPerEq,MemoryLinearSystem,OptOverheadsTime,OptimizedTimes"
 
     echo $header
 }
@@ -56,7 +57,6 @@ parse_hpcg_file() {
     IterationCountTest=$(cut -d "=" -f2 <<<$(awk '/Iteration Count Information::Result/ {printf "%s",$0}' "$filename"))
     ReproducibilityTest=$(cut -d "=" -f2 <<<$(awk '/Reproducibility Information::Result/ {printf "%s",$0}' "$filename"))
     ValidBench=$(awk '/Final Summary::HPCG result/ {printf "%s",$5}' "$filename")
-    Rating=$(cut -d "=" -f2 <<<$(awk '/Final Summary::HPCG result/ {printf "%s",$0}' "$filename"))
 
     ConvergenceTestIterCount=$(cut -d "=" -f2 <<<$(awk '/^Spectral Convergence Tests::Unpreconditioned::Maximum/ {printf "%s",$0}' "$filename"))
     ConvergenceTestExpIterCount=$(cut -d "=" -f2 <<<$(awk '/Spectral Convergence Tests::Unpreconditioned::Expected/ {printf "%s",$0}' "$filename"))
@@ -83,34 +83,42 @@ parse_hpcg_file() {
     FPWaxpby=$(cut -d "=" -f2 <<<$(awk '/Floating Point Operations Summary::Raw WAXPBY/ {printf "%s",$0}' "$filename"))
     FPSpmv=$(cut -d "=" -f2 <<<$(awk '/Floating Point Operations Summary::Raw SpMV/ {printf "%s",$0}' "$filename"))
     FPMG=$(cut -d "=" -f2 <<<$(awk '/Floating Point Operations Summary::Raw MG/ {printf "%s",$0}' "$filename"))
+    FPTotalWithConv=$(cut -d "=" -f2 <<<$(awk '/Floating Point Operations Summary::Total with convergence overhead/ {printf "%s",$0}' "$filename"))
 
     BWTotal=$(cut -d "=" -f2 <<<$(awk '/GB\/s Summary::Raw Total/ {printf "%s",$0}' "$filename"))
     BWRead=$(cut -d "=" -f2 <<<$(awk '/GB\/s Summary::Raw Read/ {printf "%s",$0}' "$filename"))
     BWWrite=$(cut -d "=" -f2 <<<$(awk '/GB\/s Summary::Raw Write/ {printf "%s",$0}' "$filename"))
+    BWTotalWithConv=$(cut -d "=" -f2 <<<$(awk '/GB\/s Summary::Total with convergence and optimization phase overhead/ {printf "%s",$0}' "$filename"))
 
-    AITotal=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw Total=/ {printf "%s",$0}' "$filename"))
-    AIDot=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw DDOT/ {printf "%s",$0}' "$filename"))
-    AIWaxpby=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw WAXPBY/ {printf "%s",$0}' "$filename"))
-    AISpmv=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw SpMV/ {printf "%s",$0}' "$filename"))
-    AIMG=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw MG/ {printf "%s",$0}' "$filename"))
+    FlopRateTotal=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw Total/ {printf "%s",$0}' "$filename"))
+    FlopRateDot=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw DDOT/ {printf "%s",$0}' "$filename"))
+    FlopRateWaxpby=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw WAXPBY/ {printf "%s",$0}' "$filename"))
+    FlopRateSpmv=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw SpMV/ {printf "%s",$0}' "$filename"))
+    FlopRateMG=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Raw MG/ {printf "%s",$0}' "$filename"))
+    FlopRateWithConv=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Total with convergence overhead/ {printf "%s",$0}' "$filename"))
+    FlopRateFinal=$(cut -d "=" -f2 <<<$(awk '/GFLOP\/s Summary::Total with convergence and optimization phase overhead/ {printf "%s",$0}' "$filename"))
+    FlopRateHistorical=$(cut -d "=" -f2 <<<$(awk '/Final Summary::HPCG 2.4 rating for historical reasons is/ {printf "%s",$0}' "$filename"))
 
     SetupTime=$(cut -d "=" -f2 <<<$(awk '/Setup Information::Setup/ {printf "%s",$0}' "$filename"))
     MemoryData=$(cut -d "=" -f2 <<<$(awk '/Memory Use Information::Total memory used for data \(Gbytes\)/ {printf "%s",$0}' "$filename"))
     MemoryOpt=$(cut -d "=" -f2 <<<$(awk '/Memory Use Information::Memory used for OptimizeProblem data/ {printf "%s",$0}' "$filename"))
+    MemoryBytesPerEq=$(cut -d "=" -f2 <<<$(awk '/Memory Use Information::Bytes per equation \(Total memory \/ Number of Equations\)/ {printf "%s",$0}' "$filename"))
+    MemoryLinearSystem=$(cut -d "=" -f2 <<<$(awk '/Memory Use Information::Memory used for linear system and CG \(Gbytes\)/ {printf "%s",$0}' "$filename"))
     OptOverheadsTime=$(cut -d "=" -f2 <<<$(awk '/User Optimization Overheads::Optimization phase time \(sec\)/ {printf "%s",$0}' "$filename"))
     OptimizedTimes=$(cut -d "=" -f2 <<<$(awk '/User Optimization Overheads::Optimization phase time vs/ {printf "%s",$0}' "$filename"))
 
     entry="$procs,$threads,$gnx,$gny,$gnz,$npx,$npy,$npz,$nx,$ny,$nz"
-    entry="$entry,$ValidBench,$Rating,$ConvergenceTest,$SymmetryTest,$IterationCountTest,$ReproducibilityTest"
+    entry="$entry,$ValidBench,$ConvergenceTest,$SymmetryTest,$IterationCountTest,$ReproducibilityTest"
     entry="$entry,$ConvergenceTestIterCount,$ConvergenceTestExpIterCount,$SymmetryTestSpmv"
     entry="$entry,$IterationCountTestRefCGIter,$IterationCountTestOptCGIter,$IterationCountTestRefIter"
     entry="$entry,$IterationCountTestOptIter,$ReproducibilityTestMean,$ReproducibilityTestVar"
     entry="$entry,$LinearSize,$LinearNnz"
     entry="$entry,$TimeTotal,$TimeOpt,$TimeDot,$TimeWaxpby,$TimeSpmv,$TimeMG"
-    entry="$entry,$FPTotal,$FPDot,$FPWaxpby,$FPSpmv,$FPMG"
-    entry="$entry,$BWTotal,$BWRead,$BWWrite"
-    entry="$entry,$AITotal,$AIDot,$AIWaxpby,$AISpmv,$AIMG"
-    entry="$entry,$SetupTime,$MemoryData,$MemoryOpt,$OptOverheadsTime,$OptimizedTimes"
+    entry="$entry,$FPTotal,$FPDot,$FPWaxpby,$FPSpmv,$FPMG,$FPTotalWithConv"
+    entry="$entry,$BWTotal,$BWRead,$BWWrite,$BWTotalWithConv"
+    entry="$entry,$FlopRateTotal,$FlopRateDot,$FlopRateWaxpby,$FlopRateSpmv,$FlopRateMG"
+    entry="$entry,$FlopRateWithConv,$FlopRateFinal,$FlopRateHistorical"
+    entry="$entry,$SetupTime,$MemoryData,$MemoryOpt,$MemoryBytesPerEq,$MemoryLinearSystem,$OptOverheadsTime,$OptimizedTimes"
 
     echo $entry
 }
