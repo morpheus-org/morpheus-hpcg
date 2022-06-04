@@ -22,7 +22,7 @@
 
 create_hpcg_header() {
     header="procs,threads,gnx,gny,gnz,npx,npy,npz,nx,ny,nz"
-    header="$header,ValidBench,Rating,ConvergenceTest,SymmetryTest,IterationCountTest,ReproducibilityTest"
+    header="$header,ValidBench,ConvergenceTest,SymmetryTest,IterationCountTest,ReproducibilityTest"
     header="$header,ConvergenceTestIterCount,ConvergenceTestExpIterCount,SymmetryTestSpmv"
     header="$header,IterationCountTestRefCGIter,IterationCountTestOptCGIter,IterationCountTestRefIter"
     header="$header,IterationCountTestOptIter,ReproducibilityTestMean,ReproducibilityTestVar"
