@@ -109,7 +109,7 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 
 #if defined(HPCG_DEBUG) || defined(HPCG_DETAILED_DEBUG)
   SparseMatrixWrite(A);
-  MorpheusSparseMatrixWrite(A);
+  // MorpheusSparseMatrixWrite(A);
 #endif
 
   local_sub_report.push_back(MorpheusSparseMatrixGetLocalProperties(A));
@@ -129,7 +129,7 @@ int OptimizeProblem(SparseMatrix& A, CGData& data, Vector& b, Vector& x,
 #if defined(HPCG_DEBUG) || defined(HPCG_DETAILED_DEBUG)
     int clvl = MorpheusSparseMatrixGetCoarseLevel(*M);
     SparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
-    MorpheusSparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
+    // MorpheusSparseMatrixWrite(*M, "coarse-" + std::to_string(clvl) + "-");
 #endif
 
     local_sub_report.push_back(MorpheusSparseMatrixGetLocalProperties(*M));

@@ -100,6 +100,10 @@ using std::endl;
 #include "morpheus/Morpheus_VectorRoutines.hpp"
 #include "morpheus/Morpheus_ReportResults.hpp"
 
+#if defined(HPCG_WITH_MULTI_FORMATS)
+#include "morpheus/Morpheus_Timer.hpp"
+#endif
+
 Morpheus::InitArguments args;
 #endif  // HPCG_WITH_MORPHEUS
 
@@ -150,12 +154,6 @@ int main(int argc, char* argv[]) {
   if (size < 100 && rank == 0)
     HPCG_fout << "Process " << rank << " of " << size << " is alive with "
               << params.numThreads << " threads." << endl;
-
-  if (rank == 0) {
-    char c;
-    std::cout << "Press key to continue" << std::endl;
-    std::cin.get(c);
-  }
 #ifndef HPCG_NO_MPI
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -424,6 +422,21 @@ int main(int argc, char* argv[]) {
   TestNormsData testnorms_data;
   testnorms_data.samples = numberOfCgSets;
   testnorms_data.values  = new double[numberOfCgSets];
+
+#if defined(HPCG_WITH_MORPHEUS)
+#if defined(HPCG_WITH_MULTI_FORMATS)
+  // Zero timers
+  for (auto idx = 0; idx < sub_mtimers.size(); idx++) {
+    sub_mtimers[idx].SPMV       = 0;
+    sub_mtimers[idx].SYMGS      = 0;
+    sub_mtimers[idx].MG         = 0;
+    sub_mtimers[idx].HALO_SWAP  = 0;
+    sub_mtimers[idx].CG         = 0;
+    sub_mtimers[idx].SPMV_LOCAL = 0;
+    sub_mtimers[idx].SPMV_GHOST = 0;
+  }
+#endif  // HPCG_WITH_MULTI_FORMATS
+#endif  // HPCG_WITH_MORPHEUS
 
   for (int i = 0; i < numberOfCgSets; ++i) {
 #ifdef HPCG_WITH_MORPHEUS

@@ -148,13 +148,12 @@ void ReportTimingResults() {
 #endif
 
     std::stringstream header;
-    header << "Process" << del << "MG_Level" << del << "SPMV(s)" << del
-           << "SPMV_Local(s)" << del
+    header << "Process" << del << "MG_Level" << del << "SPMV" << del
+           << "SPMV_Local" << del
 #if defined(HPCG_WITH_SPLIT_DISTRIBUTED)
-           << "SPMV_Ghost(s)" << del
+           << "SPMV_Ghost" << del
 #endif
-           << "SYMGS(s)" << del << "MG(s)" << del << "Halo_Swap(s)" << del
-           << "CG(s)";
+           << "SYMGS" << del << "MG" << del << "Halo_Swap" << del << "CG";
     result += header.str() + eol;
 
     for (size_t i = 0; i < mtimers.size(); i++) {

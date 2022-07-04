@@ -107,20 +107,22 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   auto xlocal = uvec(Alocal.nrows(), xv.data());
   auto xghost = uvec(Aghost.ncols(), xv.data() + Aghost.nrows());
 
-  double tlocal = morpheus_timer();
+  double tlocal = 0.0, tghost = 0.0;
+  MTICK();
   Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, yv);
   Kokkos::fence();
-  tlocal = morpheus_timer() - tlocal;
+  MTOCK(tlocal);
 
-  double tghost = morpheus_timer();
+  MTICK();
   Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, yv, false);
   Kokkos::fence();
-  tghost = morpheus_timer() - tghost;
+  MTOCK(tghost);
 #else
-  double tlocal = morpheus_timer();
+  double tlocal = 0.0;
+  MTICK();
   Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xv, yv);
   Kokkos::fence();
-  tlocal = morpheus_timer() - tlocal;
+  MTOCK(tlocal);
 #endif
 
   tspmv = morpheus_timer() - t_begin;

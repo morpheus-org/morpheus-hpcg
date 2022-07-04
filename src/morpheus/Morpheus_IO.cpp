@@ -36,14 +36,15 @@ void SparseMatrixWrite(SparseMatrix& A, std::string prefix) {
     for (int j = 0; j < A.nonzerosInRow[i]; j++) {
       global_int_t curIndex = A.mtxIndG[i][j];
       if (A.geom->rank == ComputeRankOfMatrixRow(*(A.geom), curIndex)) {
-        local_entry << i << " " << A.mtxIndL[i][j] << " "
+        local_entry << curIndex << " " << i << " " << A.mtxIndL[i][j] << " "
                     << A.matrixValues[i][j] << std::endl;
       } else {
-        external_entry << i << " " << A.mtxIndL[i][j] - A.localNumberOfRows
-                       << " " << A.matrixValues[i][j] << std::endl;
+        external_entry << curIndex << " " << i << " "
+                       << A.mtxIndL[i][j] - A.localNumberOfRows << " "
+                       << A.matrixValues[i][j] << std::endl;
       }
-      entry << i << " " << A.mtxIndL[i][j] << " " << A.matrixValues[i][j]
-            << std::endl;
+      entry << curIndex << " " << i << " " << A.mtxIndL[i][j] << " "
+            << A.matrixValues[i][j] << std::endl;
     }
   }
 

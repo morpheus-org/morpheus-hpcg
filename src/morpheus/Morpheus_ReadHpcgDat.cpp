@@ -57,7 +57,12 @@ int ReadMorpheusDat(std::string filename, std::vector<format_id> &input_file) {
   format_id entry;
   do {
     // TODO: No fancy checks here yet.
-    if (fscanf(morpheusStream, "%d", &entry.rank) != 1) {
+#ifdef HPCG_NO_LONG_LONG
+    int error = fscanf(morpheusStream, "%d", &entry.rank);
+#else
+    int error = fscanf(morpheusStream, "%lld", &entry.rank);
+#endif  // HPCG_NO_LONG_LONG
+    if (error != 1) {
       break;
     }
     fscanf(morpheusStream, "%d", &entry.mg_level);
