@@ -1,4 +1,3 @@
-
 //@HEADER
 // ***************************************************
 //
@@ -122,8 +121,8 @@ int ComputeProlongation(const SparseMatrix& Af, Vector& xf) {
   Vector_t* rcopt = (Vector_t*)Af.mgData->rc->optimizationData;
   Vector_t* xfopt = (Vector_t*)xf.optimizationData;
 
-  Prolongation_Impl(rcopt->values.dev.size(), xcopt->values.dev, MGopt->f2c.dev,
-                    xfopt->values.dev);
+  Prolongation_Impl((local_int_t)rcopt->values.dev.size(), xcopt->values.dev,
+                    MGopt->f2c.dev, xfopt->values.dev);
 #else
   ComputeProlongation_ref(Af, xf);
 #endif  // HPCG_WITH_MORPHEUS

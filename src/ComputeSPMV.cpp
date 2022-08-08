@@ -1,4 +1,3 @@
-
 //@HEADER
 // ***************************************************
 //
@@ -106,15 +105,16 @@ int ComputeSPMV(const SparseMatrix& A, Vector& x, Vector& y) {
   // wrap vector to local and ghost part
   auto xlocal = uvec(Alocal.nrows(), xv.data());
   auto xghost = uvec(Aghost.ncols(), xv.data() + Aghost.nrows());
+  auto ywrap  = uvec(yv.size(), yv.data());
 
   double tlocal = 0.0, tghost = 0.0;
   MTICK();
-  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, yv);
+  Morpheus::multiply<Morpheus::ExecSpace>(Alocal, xlocal, ywrap);
   Kokkos::fence();
   MTOCK(tlocal);
 
   MTICK();
-  Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, yv, false);
+  Morpheus::multiply<Morpheus::ExecSpace>(Aghost, xghost, ywrap, false);
   Kokkos::fence();
   MTOCK(tghost);
 #else
