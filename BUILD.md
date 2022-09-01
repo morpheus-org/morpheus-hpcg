@@ -82,17 +82,26 @@ $ make
 * HPCG_ENABLE_MORPHEUS_DYNAMIC: BOOL
   * Whether to enable Morpheus Library with dynamic matrix support.
   * Default: OFF
-* HPCG_ENABLE_MORPHEUS_SERIAL: BOOL
+* HPCG_ENABLE_KOKKOS_SERIAL: BOOL
   * Whether to enable Morpheus Serial Execution Space.
   * Default: OFF
-* HPCG_ENABLE_MORPHEUS_OPENMP: BOOL
+* HPCG_ENABLE_KOKKOS_OPENMP: BOOL
   * Whether to enable Morpheus OpenMP Execution Space.
   * Default: OFF
-* HPCG_ENABLE_MORPHEUS_CUDA: BOOL
+* HPCG_ENABLE_KOKKOS_CUDA: BOOL
   * Whether to enable Morpheus Cuda Execution Space.
   * Default: OFF
+* HPCG_ENABLE_MG: BOOL
+  * Whether to enable MG Preconditioner in timing runs.
+  * Default: ON
+* HPCG_ENABLE_MULTI_FORMATS: BOOL
+  * Whether to enable support for multiple formats across processes and MG levels using the input file.
+  * Default: OFF
+* HPCG_ENABLE_SPLIT_DISTRIBUTED: BOOL
+  * Whether to enable support for split between on-process and ghost elements of the local matrix.
+  * Default: OFF
 
-### Morpheus-HPCG on Isambard
+<!-- ### Morpheus-HPCG on Isambard
 
 #### Run on cacade nodes: Cray-11 and MPICH
 ```sh
@@ -136,4 +145,4 @@ OMP_NUM_THREADS=1 mpirun -n 1 ./morpheus-hpcg --morpheus-format=1 --kokkos-threa
 
 #### Notes:
 
-* For V100: Cray/LLVM version must be smaller than 11 to be used with Cuda 11.2
+* For V100: Cray/LLVM version must be smaller than 11 to be used with Cuda 11.2 -->
