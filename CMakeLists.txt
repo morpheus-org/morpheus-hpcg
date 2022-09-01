@@ -62,6 +62,7 @@ if(HPCG_ENABLE_MORPHEUS)
   option(HPCG_ENABLE_KOKKOS_SERIAL "Enable Morpheus Serial Execution Space" OFF)
   option(HPCG_ENABLE_KOKKOS_OPENMP "Enable Morpheus OpenMP Execution Space" OFF)
   option(HPCG_ENABLE_KOKKOS_CUDA "Enable Morpheus Cuda Execution Space" OFF)
+  option(HPCG_ENABLE_KOKKOS_HIP "Enable Morpheus HIP Execution Space" OFF)
   option(
     HPCG_ENABLE_MULTI_FORMATS
     "Enabling multiple formats across processes and MG levels using the input file."
@@ -149,6 +150,9 @@ if(HPCG_ENABLE_MORPHEUS)
   elseif(HPCG_ENABLE_KOKKOS_CUDA)
     target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_KOKKOS_CUDA)
     message(STATUS "Execution Space: Kokkos::Cuda")
+  elseif(HPCG_ENABLE_KOKKOS_HIP)
+    target_compile_definitions(morpheus-hpcg PRIVATE HPCG_WITH_KOKKOS_HIP)
+    message(STATUS "Execution Space: Kokkos::Experimental::HIP")
   else()
     message(
       FATAL_ERROR "Please enable an execution space to be used with HPCG.")

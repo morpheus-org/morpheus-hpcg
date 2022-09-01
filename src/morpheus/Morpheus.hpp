@@ -44,6 +44,9 @@ using Space     = Kokkos::OpenMP;
 #elif defined(HPCG_WITH_KOKKOS_CUDA)
 using ExecSpace = Kokkos::Cuda;
 using Space     = Kokkos::Cuda;
+#elif defined(HPCG_WITH_KOKKOS_HIP)
+using ExecSpace = Kokkos::Experimental::HIP;
+using Space     = Kokkos::Experimental::HIP;
 #endif
 
 using value_type = double;
