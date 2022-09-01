@@ -52,7 +52,7 @@
 #include "morpheus/Morpheus.hpp"
 #include "morpheus/Morpheus_MGData.hpp"
 
-#ifdef HPCG_WITH_KOKKOS_CUDA
+#if defined(HPCG_WITH_KOKKOS_CUDA) || defined(HPCG_WITH_KOKKOS_HIP)
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
 __launch_bounds__(BLOCKSIZE) __global__
     void kernel_prolongation(const IndexType nc,
@@ -93,7 +93,7 @@ void Prolongation_Impl(const IndexType nc,
     xf[f2c[i]] += xc[i];
   }
 }
-#endif  // HPCG_WITH_KOKKOS_CUDA
+#endif  // HPCG_WITH_KOKKOS_CUDA || HPCG_WITH_KOKKOS_HIP
 #else
 #include "ComputeProlongation_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
@@ -122,8 +122,8 @@ int ComputeProlongation(const SparseMatrix& Af, Vector& xf) {
   Vector_t* rcopt = (Vector_t*)Af.mgData->rc->optimizationData;
   Vector_t* xfopt = (Vector_t*)xf.optimizationData;
 
-  Prolongation_Impl(rcopt->values.dev.size(), xcopt->values.dev, MGopt->f2c.dev,
-                    xfopt->values.dev);
+  Prolongation_Impl((int)rcopt->values.dev.size(), xcopt->values.dev,
+                    MGopt->f2c.dev, xfopt->values.dev);
 #else
   ComputeProlongation_ref(Af, xf);
 #endif  // HPCG_WITH_MORPHEUS

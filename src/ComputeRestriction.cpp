@@ -52,7 +52,7 @@
 #include "morpheus/Morpheus.hpp"
 #include "morpheus/Morpheus_MGData.hpp"
 
-#ifdef HPCG_WITH_KOKKOS_CUDA
+#if defined(HPCG_WITH_KOKKOS_CUDA) || defined(HPCG_WITH_KOKKOS_HIP)
 template <unsigned int BLOCKSIZE, typename ValueType, typename IndexType>
 __launch_bounds__(BLOCKSIZE) __global__
     void kernel_restriction(IndexType nc, const ValueType* __restrict__ Axf,
@@ -97,7 +97,7 @@ void Restriction_Impl(const Morpheus::Vector<ValueType>& Axf,
     rc[i] = rf[f2c[i]] - Axf[f2c[i]];
   }
 }
-#endif  // HPCG_ENABLE_KOKKOS_CUDA
+#endif  // HPCG_ENABLE_KOKKOS_CUDA || HPCG_ENABLE_KOKKOS_HIP
 #else
 #include "ComputeRestriction_ref.hpp"
 #endif  // HPCG_WITH_MORPHEUS
