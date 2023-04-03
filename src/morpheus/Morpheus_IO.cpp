@@ -72,10 +72,10 @@ void MorpheusSparseMatrixWrite(SparseMatrix& A, std::string prefix) {
 
   // Convert to CSR
   typename Morpheus::Csr::HostMirror Alocal;
-  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, Alocal);
+  Morpheus::convert<Morpheus::Serial>(Aopt->local.host, Alocal);
 
   std::stringstream local_entry;
-  for (local_int_t i = 0; i < Alocal.nrows(); i++) {
+  for (size_t i = 0; i < Alocal.nrows(); i++) {
     for (local_int_t jj = Alocal.crow_offsets(i);
          jj < Alocal.crow_offsets(i + 1); jj++) {
       local_entry << i << " " << Alocal.ccolumn_indices(jj) << " "
@@ -93,10 +93,10 @@ void MorpheusSparseMatrixWrite(SparseMatrix& A, std::string prefix) {
 
   // Convert to CSR
   typename Morpheus::Csr::HostMirror Aghost;
-  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, Aghost);
+  Morpheus::convert<Morpheus::Serial>(Aopt->ghost.host, Aghost);
 
   std::stringstream external_entry;
-  for (local_int_t i = 0; i < Aghost.nrows(); i++) {
+  for (size_t i = 0; i < Aghost.nrows(); i++) {
     for (local_int_t jj = Aghost.crow_offsets(i);
          jj < Aghost.crow_offsets(i + 1); jj++) {
       external_entry << i << " " << Aghost.ccolumn_indices(jj) << " "

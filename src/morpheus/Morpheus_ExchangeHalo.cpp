@@ -117,9 +117,10 @@ void MorpheusExchangeHalo(const SparseMatrix& A, Vector& x) {
   // send received elements to device in one go
   using mirror = typename Morpheus::UnmanagedVector<local_int_t>::HostMirror;
   mirror elem_rec(num_neighbors, receiveLength);
-  auto total_received = (num_neighbors > 0) ? Morpheus::reduce<Kokkos::Serial>(
-                                                  elem_rec, num_neighbors)
-                                            : 0;
+  auto total_received =
+      (num_neighbors > 0)
+          ? Morpheus::reduce<Morpheus::Serial>(elem_rec, num_neighbors)
+          : 0;
   Morpheus::copy(xopt->values.host, xopt->values.dev, localNumberOfRows,
                  localNumberOfRows + total_received);
 #endif  // !MPIX_CUDA_AWARE_SUPPORT

@@ -36,17 +36,17 @@
 namespace Morpheus {
 // Define Morpheus Execution and Memory Spaces
 #if defined(HPCG_WITH_KOKKOS_SERIAL)
-using ExecSpace = Kokkos::Serial;
-using Space     = Kokkos::Serial;
+using ExecSpace = Morpheus::Serial;
+using Space     = Morpheus::Serial;
 #elif defined(HPCG_WITH_KOKKOS_OPENMP)
-using ExecSpace = Kokkos::OpenMP;
-using Space     = Kokkos::OpenMP;
+using ExecSpace = Morpheus::OpenMP;
+using Space     = Morpheus::OpenMP;
 #elif defined(HPCG_WITH_KOKKOS_CUDA)
-using ExecSpace = Kokkos::Cuda;
-using Space     = Kokkos::Cuda;
+using ExecSpace = Morpheus::Cuda;
+using Space     = Morpheus::Cuda;
 #elif defined(HPCG_WITH_KOKKOS_HIP)
-using ExecSpace = Kokkos::Experimental::HIP;
-using Space     = Kokkos::Experimental::HIP;
+using ExecSpace = Morpheus::HIP;
+using Space     = Morpheus::HIP;
 #endif
 
 using value_type = double;

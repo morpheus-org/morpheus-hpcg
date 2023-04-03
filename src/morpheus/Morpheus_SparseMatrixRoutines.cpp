@@ -83,8 +83,8 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetLocalFormat(A));
-  Morpheus::convert<Kokkos::Serial>(Aopt->ghost.host, GetGhostFormat(A));
+  Morpheus::convert<Morpheus::Serial>(Aopt->local.host, GetLocalFormat(A));
+  Morpheus::convert<Morpheus::Serial>(Aopt->ghost.host, GetGhostFormat(A));
 #endif
   // Now send to device
   Aopt->local.dev =
@@ -115,7 +115,7 @@ void HpcgToMorpheusMatrix(SparseMatrix& A) {
 
 #ifdef HPCG_WITH_MORPHEUS_DYNAMIC
   // In-place conversion w/ temporary allocation
-  Morpheus::convert<Kokkos::Serial>(Aopt->local.host, GetLocalFormat(A));
+  Morpheus::convert<Morpheus::Serial>(Aopt->local.host, GetLocalFormat(A));
 #endif
   // Now send to device
   Aopt->local.dev =
